@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "libro-en-blanco",
+  "title": "Publicación sin título",
+  "description": "",
+  "author": "",
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "settings": {
+    "format": "a4-portrait",
+    "showPageNumbers": true,
+    "flipDuration": 800
+  },
+  "pages": [
+    { "id": "p-01", "title": "Portada", "background": "#FFFFFF", "elements": [] },
+    { "id": "p-02", "title": "", "background": "#FFFFFF", "elements": [] },
+    { "id": "p-03", "title": "", "background": "#FFFFFF", "elements": [] },
+    { "id": "p-04", "title": "", "background": "#FFFFFF", "elements": [] },
+    { "id": "p-05", "title": "", "background": "#FFFFFF", "elements": [] },
+    { "id": "p-06", "title": "", "background": "#FFFFFF", "elements": [] },
+    { "id": "p-07", "title": "", "background": "#FFFFFF", "elements": [] },
+    { "id": "p-08", "title": "Contraportada", "background": "#FFFFFF", "elements": [] }
+  ]
+}

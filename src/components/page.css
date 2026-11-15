@@ -1,0 +1,39 @@
+.pr-page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  container-type: size;
+  background-size: cover;
+  background-position: center;
+}
+.pr-el { position: absolute; transform-origin: center; }
+.pr-el.is-hit { outline: 0.6cqw solid #39a900; outline-offset: 0.4cqw; border-radius: 0.6cqw; }
+.pr-text {
+  width: 100%;
+  height: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow: hidden;
+}
+.pr-image { width: 100%; height: 100%; display: block; }
+.pr-image-empty {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 3cqw;
+  color: #5f6b5a;
+  background: repeating-linear-gradient(45deg, #f2f5f0, #f2f5f0 2cqw, #e6f5db 2cqw, #e6f5db 4cqw);
+  border-radius: 1cqw;
+}
+.pr-shape { width: 100%; height: 100%; display: block; overflow: visible; }
+.pr-number {
+  position: absolute;
+  bottom: 2.5cqw;
+  font-size: 2.6cqw;
+  color: #5f6b5a;
+  font-variant-numeric: tabular-nums;
+}
+.pr-number.is-right { right: 4cqw; }
+.pr-number.is-left { left: 4cqw; }

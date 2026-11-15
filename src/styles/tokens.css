@@ -1,0 +1,53 @@
+/* ===== Tokens de diseño (identidad SENA: verde #39A900) ===== */
+:root {
+  --sena-green: #39a900;
+  --sena-green-600: #2f8f00;
+  --sena-green-700: #2b7f00;
+  --sena-green-900: #1d5600;
+  --sena-green-100: #e6f5db;
+  --sena-green-200: #cdebb6;
+  --sena-green-300: #b9e29a;
+
+  --bg: #eef2ec;
+  --surface: #ffffff;
+  --surface-2: #f6f8f4;
+  --surface-dark: #17210f;
+  --surface-dark-2: #222f19;
+  --text: #1a2416;
+  --text-muted: #5f6b5a;
+  --text-on-dark: #f1f6ed;
+  --text-on-dark-muted: #a9b8a1;
+  --border: #e1e7dc;
+  --focus: #39a900;
+  --danger: #c62828;
+  --reader-bg: radial-gradient(circle at 50% 30%, #2f8f00 0%, #1d5600 70%, #143d00 100%);
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgb(20 40 10 / 0.06), 0 1px 1px rgb(20 40 10 / 0.04);
+  --shadow-md: 0 8px 24px rgb(20 40 10 / 0.08), 0 2px 6px rgb(20 40 10 / 0.05);
+  --shadow-lg: 0 24px 60px rgb(20 40 10 / 0.18);
+
+  --font: 'Work Sans Variable', 'Work Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --topbar-h: 72px;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f150b;
+  --surface: #182112;
+  --surface-2: #1f2a18;
+  --surface-dark: #0b1007;
+  --surface-dark-2: #141c0e;
+  --text: #eef4ea;
+  --text-muted: #a3b199;
+  --border: #2b3824;
+  --reader-bg: radial-gradient(circle at 50% 30%, #1f4d05 0%, #0f2a02 70%, #081801 100%);
+  --shadow-md: 0 8px 24px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 24px 60px rgb(0 0 0 / 0.5);
+  color-scheme: dark;
+}

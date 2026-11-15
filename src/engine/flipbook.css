@@ -1,0 +1,110 @@
+/* ===== Motor de giro 3D ===== */
+.fb-stage {
+  perspective: 2600px;
+  perspective-origin: 50% 40%;
+  display: grid;
+  place-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y pinch-zoom;
+  /* La sombra va en el contenedor: un filtro en .fb-book aplanaría el 3D. */
+  filter: drop-shadow(0 18px 28px rgb(10 30 0 / 0.25));
+}
+
+.fb-book {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 450ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  cursor: grab;
+}
+.fb-book:active { cursor: grabbing; }
+
+.fb-spine {
+  position: absolute;
+  inset: 0 auto 0 50%;
+  width: 60px;
+  transform: translateX(-50%) translateZ(2px);
+  pointer-events: none;
+  z-index: 9999;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(0 0 0 / 0.04) 35%,
+    rgb(0 0 0 / 0.16) 49.5%,
+    rgb(0 0 0 / 0.16) 50.5%,
+    rgb(0 0 0 / 0.04) 65%,
+    transparent 100%
+  );
+}
+
+.fb-leaf {
+  position: absolute;
+  top: 0;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.fb-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: #fff;
+}
+.fb-front { border-radius: 0 6px 6px 0; }
+.fb-back { transform: rotateY(180deg); border-radius: 6px 0 0 6px; }
+.fb-leaf.is-single .fb-front { border-radius: 6px; }
+
+/* Brillo sutil cerca del lomo para simular curvatura del papel */
+.fb-gloss { position: absolute; inset: 0; pointer-events: none; }
+.fb-gloss-front {
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.12), rgb(0 0 0 / 0.02) 6%, transparent 14%);
+}
+.fb-gloss-back {
+  background: linear-gradient(270deg, rgb(0 0 0 / 0.12), rgb(0 0 0 / 0.02) 6%, transparent 14%);
+}
+.fb-leaf.is-single .fb-gloss-front { background: none; }
+
+/* Sombra dinámica sobre la cara que gira */
+.fb-shade { position: absolute; inset: 0; pointer-events: none; }
+.fb-shade-front {
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.45) 70%, rgb(255 255 255 / 0.15));
+}
+.fb-shade-back {
+  background: linear-gradient(270deg, rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.45) 70%, rgb(255 255 255 / 0.15));
+}
+
+/* Sombra proyectada sobre la página de abajo */
+.fb-cast {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 9998;
+}
+.fb-cast-right { background: linear-gradient(90deg, rgb(0 0 0 / 0.35), transparent 60%); }
+.fb-cast-left { background: linear-gradient(270deg, rgb(0 0 0 / 0.35), transparent 60%); }
+
+/* Esquina doblada que invita a pasar la página */
+.fb-corner {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 44px;
+  height: 44px;
+  z-index: 9997;
+  pointer-events: none;
+  transform: translateZ(3px);
+  background: linear-gradient(135deg, transparent 50%, rgb(0 0 0 / 0.08) 50%, #f4f7f2 62%, #dfe6da 100%);
+  border-top-left-radius: 10px;
+  opacity: 0.85;
+  transition: width 200ms ease, height 200ms ease;
+}
+.fb-book:hover .fb-corner { width: 64px; height: 64px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fb-book { transition: none; }
+  .fb-corner { transition: none; }
+}

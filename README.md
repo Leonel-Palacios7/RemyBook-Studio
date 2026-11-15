@@ -1,0 +1,103 @@
+# SENA Flipbook Studio
+
+Editor y lector de publicaciones digitales con **giro de páginas 3D propio**, pensado para
+material de formación institucional. Primera versión (v1.0.0): la publicación inicia **en blanco**
+y se edita libremente, sin límites de páginas ni de elementos.
+
+![Lector con doble página](docs/capturas/06-lector-doble-pagina.png)
+
+## Funcionalidades
+
+**Lector**
+- Motor de giro 3D escrito desde cero (CSS 3D + `requestAnimationFrame`), sin librerías de flipbook.
+- Doble página en escritorio y lectura secuencial de una página en móvil (cambia automáticamente).
+- Giro hacia adelante y hacia atrás con perspectiva, sombras dinámicas, sombra proyectada, lomo y hojas de doble cara.
+- Clic en la página, arrastre con ratón o dedo (con inercia), flechas laterales y barra de controles.
+- Índice (a partir de los títulos de página), miniaturas y búsqueda sin tildes ni mayúsculas.
+- Zoom (50 %–300 %), pantalla completa, compartir (Web Share o copiar enlace) e imprimir / guardar como PDF.
+- Enlaces profundos por página (`#/leer?p=5`).
+- Teclado: `←` `→` `Re Pág` `Av Pág` `Inicio` `Fin` `+` `-` `0` `F` `Esc`.
+
+**Editor**
+- Páginas: agregar, duplicar, eliminar, reordenar (arrastrar o botones) y titular.
+- Elementos: texto (título, subtítulo, párrafo), imágenes (subir, arrastrar al lienzo o URL https) y
+  formas (rectángulo, elipse, triángulo, estrella, flecha, línea).
+- Mover, redimensionar (Mayús = proporcional), rotar (Mayús = 15°), guías de centrado, capas, bloqueo,
+  opacidad, colores libres y paleta SENA, tipografía, alineación, interlineado, bordes y radios.
+- Fondo de página por color o imagen; formato de página (A4, carta, cuadrado, 16:9); velocidad del giro.
+- Deshacer / rehacer, copiar / pegar, duplicar y atajos de teclado.
+- Guardado automático en el navegador (IndexedDB) y exportar / importar JSON validado.
+- Tema claro y oscuro.
+
+## Inicio rápido
+
+Requisitos: Node.js 20 o superior (recomendado 22).
+
+```bash
+npm install
+npm run dev        # desarrollo en http://localhost:5173
+```
+
+Para ver la versión de producción ya compilada:
+
+```bash
+npm install
+npm run build
+npm run preview    # http://localhost:4173
+```
+
+> El `.zip` incluye la carpeta `dist/` ya compilada. Basta con `npm install` y `npm run preview`.
+> `dist/index.html` no funciona con doble clic (los navegadores bloquean módulos en `file://`);
+> sírvelo con `npm run preview` o cualquier servidor estático.
+
+## Scripts
+
+| Script | Uso |
+| --- | --- |
+| `npm run dev` | Servidor de desarrollo con recarga en caliente |
+| `npm run build` | Verificación de tipos y build de producción en `dist/` |
+| `npm run preview` | Sirve el build de producción |
+| `npm test` | Pruebas unitarias e integración (Vitest + Testing Library) |
+| `npm run test:coverage` | Pruebas con cobertura |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | TypeScript en modo estricto |
+| `npm run check` | Todo lo anterior en cadena (lo que ejecuta la CI) |
+
+## Estructura
+
+```
+src/
+  config/        Configuración de la app, paleta SENA y formatos (editable sin tocar componentes)
+  content/       Contenido inicial en JSON, esquema de validación (Zod) y fábricas
+  domain/        Tipos del modelo de publicación
+  engine/        Motor de giro 3D: modelo de hojas (puro), animador y componente FlipBook
+  components/    Renderizador de páginas compartido (lector, miniaturas, editor, impresión)
+  features/
+    reader/      Lector: barra, panel de índice/miniaturas/búsqueda, impresión
+    editor/      Editor: páginas, lienzo, herramientas, inspector, geometría
+  store/         Estado con historial (reductor puro) y persistencia
+  lib/           Utilidades: seguridad, enrutador por hash, navegador, hooks
+  styles/        Tokens de diseño y estilos globales
+docs/            Documentación técnica y capturas
+```
+
+Más detalle en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
+
+## Documentación
+
+- [Auditoría inicial](docs/AUDITORIA.md)
+- [Análisis de las referencias (video y estilo)](docs/ANALISIS_VIDEO.md)
+- [Arquitectura y motor de giro](docs/ARQUITECTURA.md)
+- [Contenido administrable](docs/CONTENIDO.md)
+- [Seguridad, accesibilidad y rendimiento](docs/CALIDAD.md)
+- [Despliegue en GitHub](docs/DESPLIEGUE.md)
+
+## Identidad visual
+
+Se usa el verde institucional **#39A900** y derivados (tintes y sombras), tipografía **Work Sans** y
+neutros. No se incluyen logotipos ni recursos de marca: deben agregarse con autorización y según el
+Manual de Identidad vigente. Toda la paleta está en `src/config/app.config.ts` y `src/styles/tokens.css`.
+
+## Licencia
+
+Pendiente de definir por la entidad propietaria antes de publicar el repositorio.
