@@ -47,9 +47,16 @@ export interface TextElement extends ElementBase {
   padding: number;
   /** Radio de borde, % del ancho de la página. */
   radius: number;
+  /** Espaciado entre letras en em (opcional). */
+  letterSpacing?: number;
+  /** Mostrar en mayúsculas (opcional). */
+  uppercase?: boolean;
 }
 
 export type ImageFit = 'cover' | 'contain' | 'fill';
+
+/** Silueta con la que se recorta una imagen. */
+export type ImageMask = 'none' | 'arch' | 'circle' | 'pill' | 'blob' | 'hexagon' | 'diamond' | 'leaf';
 
 export interface ImageElement extends ElementBase {
   kind: 'image';
@@ -57,9 +64,24 @@ export interface ImageElement extends ElementBase {
   alt: string;
   fit: ImageFit;
   radius: number;
+  mask?: ImageMask;
+  /** Color del marco vacío mientras no hay imagen (plantillas). */
+  placeholder?: string;
 }
 
-export type ShapeType = 'rect' | 'ellipse' | 'triangle' | 'line' | 'star' | 'arrow';
+export type ShapeType =
+  | 'rect'
+  | 'ellipse'
+  | 'triangle'
+  | 'line'
+  | 'star'
+  | 'arrow'
+  | 'arch'
+  | 'wave'
+  | 'blob'
+  | 'hexagon'
+  | 'diamond'
+  | 'leaf';
 
 export interface ShapeElement extends ElementBase {
   kind: 'shape';
@@ -69,6 +91,10 @@ export interface ShapeElement extends ElementBase {
   /** Grosor de borde, % del ancho de la página. */
   strokeWidth: number;
   radius: number;
+  /** Segundo color: si existe, el relleno es un degradado lineal. */
+  fillTo?: string;
+  /** Ángulo del degradado en grados (0 = de abajo hacia arriba, 90 = de izquierda a derecha). */
+  gradientAngle?: number;
 }
 
 export type PageElement = TextElement | ImageElement | ShapeElement;

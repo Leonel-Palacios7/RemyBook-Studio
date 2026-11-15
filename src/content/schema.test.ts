@@ -32,3 +32,16 @@ describe('validación del contenido', () => {
     expect(book.pages.map((p) => p.title)).toContain('Portada');
   });
 });
+
+describe('formas y marcos nuevos', () => {
+  it('acepta degradados, siluetas y espaciado de texto', () => {
+    const book = createDefaultBook();
+    book.pages[0]!.elements.push(
+      createShape('arch', { fillTo: '#ffffff', gradientAngle: 90 }),
+      createShape('wave'),
+      createImage('', { mask: 'blob', placeholder: '#cccccc' }),
+      createText({ letterSpacing: 0.2, uppercase: true }),
+    );
+    expect(parseBook(book).ok).toBe(true);
+  });
+});

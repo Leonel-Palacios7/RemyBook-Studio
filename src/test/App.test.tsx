@@ -181,3 +181,29 @@ describe('integración: editor', () => {
     expect(screen.getByText('Página 1 de 8')).toBeInTheDocument();
   });
 });
+
+describe('integración: plantillas', () => {
+  it('aplica una plantilla desde el editor y se puede deshacer', async () => {
+    await renderApp();
+    fireEvent.click(screen.getByRole('button', { name: /Editor/ }));
+    await screen.findByTestId('canvas-page');
+    fireEvent.click(screen.getByRole('button', { name: /Plantillas/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Plantillas de turismo' });
+    expect(within(dialog).getAllByRole('button', { name: /Ver plantilla/ })).toHaveLength(10);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Ver plantilla Selva viva' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /Usar esta plantilla/ }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByText('Página 1 de 6')).toBeInTheDocument();
+    expect(screen.getByText(/Plantilla «Selva viva» aplicada/)).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('Deshacer'));
+    expect(screen.getByText('Página 1 de 8')).toBeInTheDocument();
+  });
+
+  it('se abre desde el lector cuando la publicación está en blanco y se cierra con Escape', async () => {
+    await renderApp();
+    fireEvent.click(screen.getByRole('button', { name: /Elegir una plantilla/ }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+});

@@ -19,7 +19,7 @@ import {
   Unlock,
   Upload,
 } from 'lucide-react';
-import type { Book, ImageElement, Page, PageElement, PageFormat, ShapeElement, TextElement } from '@/domain/types';
+import type { Book, ImageElement, ImageMask, Page, PageElement, PageFormat, ShapeElement, ShapeType, TextElement } from '@/domain/types';
 import { FONT_FAMILIES, PAGE_FORMATS } from '@/config/app.config';
 import { createDefaultBook } from '@/content/factories';
 import { parseBookJson } from '@/content/schema';
@@ -29,6 +29,32 @@ import type { BookAction } from '@/store/bookReducer';
 import { ColorField, NumberField, RangeField, Section, Segmented } from './fields';
 
 type Tab = 'element' | 'page' | 'book';
+
+const SHAPE_OPTIONS: [ShapeType, string][] = [
+  ['rect', 'Rectángulo'],
+  ['ellipse', 'Elipse'],
+  ['arch', 'Arco'],
+  ['wave', 'Onda'],
+  ['blob', 'Forma orgánica'],
+  ['leaf', 'Hoja'],
+  ['triangle', 'Triángulo'],
+  ['hexagon', 'Hexágono'],
+  ['diamond', 'Rombo'],
+  ['star', 'Estrella'],
+  ['arrow', 'Flecha'],
+  ['line', 'Línea'],
+];
+
+const IMAGE_MASKS: [ImageMask, string][] = [
+  ['none', 'Rectángulo (usa el radio)'],
+  ['arch', 'Arco'],
+  ['circle', 'Círculo'],
+  ['pill', 'Píldora'],
+  ['blob', 'Orgánica'],
+  ['leaf', 'Hoja'],
+  ['hexagon', 'Hexágono'],
+  ['diamond', 'Rombo'],
+];
 
 interface Props {
   book: Book;
@@ -218,6 +244,11 @@ function TextProps({ el, update }: { el: TextElement; update: (p: Partial<TextEl
       <div className="grid-2">
         <NumberField label="Interlineado" value={el.lineHeight} min={0.5} max={4} step={0.05} onChange={(lineHeight) => update({ lineHeight })} />
         <NumberField label="Relleno" value={el.padding} min={0} max={50} step={0.5} onChange={(padding) => update({ padding })} />
+        <NumberField label="Espaciado (em)" value={el.letterSpacing ?? 0} min={-1} max={2} step={0.01} onChange={(letterSpacing) => update({ letterSpacing })} />
+        <label className="check check-sm">
+          <input type="checkbox" checked={!!el.uppercase} onChange={(e) => update({ uppercase: e.target.checked })} />
+          MAYÚSCULAS
+        </label>
       </div>
       <NumberField label="Radio de esquinas" value={el.radius} min={0} max={50} step={0.5} onChange={(radius) => update({ radius })} />
     </>
@@ -271,6 +302,16 @@ function ImageProps({ el, update, notify }: { el: ImageElement; update: (p: Part
         <input className="input" value={el.alt} onChange={(e) => update({ alt: e.target.value })} placeholder="Describe la imagen" />
       </label>
       <label className="field">
+        <span>Forma del marco</span>
+        <select className="select" value={el.mask ?? 'none'} onChange={(e) => update({ mask: e.target.value as ImageMask })}>
+          {IMAGE_MASKS.map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="field">
         <span>Ajuste</span>
         <select className="select" value={el.fit} onChange={(e) => update({ fit: e.target.value as ImageElement['fit'] })}>
           <option value="cover">Cubrir</option>
@@ -289,15 +330,28 @@ function ShapeProps({ el, update }: { el: ShapeElement; update: (p: Partial<Shap
       <label className="field">
         <span>Tipo</span>
         <select className="select" value={el.shape} onChange={(e) => update({ shape: e.target.value as ShapeElement['shape'] })}>
-          <option value="rect">Rectángulo</option>
-          <option value="ellipse">Elipse</option>
-          <option value="triangle">Triángulo</option>
-          <option value="star">Estrella</option>
-          <option value="arrow">Flecha</option>
-          <option value="line">Línea</option>
+          {SHAPE_OPTIONS.map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
         </select>
       </label>
-      <ColorField label="Relleno" value={el.fill} onChange={(fill) => update({ fill })} />
+      <ColorField label={el.fillTo ? 'Color inicial' : 'Relleno'} value={el.fill} onChange={(fill) => update({ fill })} />
+      <label className="check check-sm">
+        <input
+          type="checkbox"
+          checked={!!el.fillTo}
+          onChange={(e) => update({ fillTo: e.target.checked ? '#FFFFFF' : undefined, gradientAngle: el.gradientAngle ?? 180 })}
+        />
+        Degradado
+      </label>
+      {el.fillTo && (
+        <>
+          <ColorField label="Color final" value={el.fillTo} onChange={(fillTo) => update({ fillTo })} />
+          <RangeField label="Dirección" value={el.gradientAngle ?? 180} min={0} max={360} step={5} onChange={(gradientAngle) => update({ gradientAngle })} format={(v) => `${v}°`} />
+        </>
+      )}
       {el.shape !== 'line' && (
         <>
           <ColorField label="Borde" value={el.stroke} onChange={(stroke) => update({ stroke })} />

@@ -35,6 +35,8 @@ const textSchema = z.object({
   lineHeight: num(0.5, 4),
   padding: num(0, 50),
   radius: num(0, 50),
+  letterSpacing: num(-1, 2).optional(),
+  uppercase: z.boolean().optional(),
 });
 
 const imageSchema = z.object({
@@ -45,16 +47,20 @@ const imageSchema = z.object({
   alt: str(500),
   fit: z.enum(['cover', 'contain', 'fill']),
   radius: num(0, 50),
+  mask: z.enum(['none', 'arch', 'circle', 'pill', 'blob', 'hexagon', 'diamond', 'leaf']).optional(),
+  placeholder: str(60).optional(),
 });
 
 const shapeSchema = z.object({
   ...base,
   kind: z.literal('shape'),
-  shape: z.enum(['rect', 'ellipse', 'triangle', 'line', 'star', 'arrow']),
+  shape: z.enum(['rect', 'ellipse', 'triangle', 'line', 'star', 'arrow', 'arch', 'wave', 'blob', 'hexagon', 'diamond', 'leaf']),
   fill: str(60),
   stroke: str(60),
   strokeWidth: num(0, 50),
   radius: num(0, 50),
+  fillTo: str(60).optional(),
+  gradientAngle: num(-360, 360).optional(),
 });
 
 export const elementSchema = z.discriminatedUnion('kind', [textSchema, imageSchema, shapeSchema]);

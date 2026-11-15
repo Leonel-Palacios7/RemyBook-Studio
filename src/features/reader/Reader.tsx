@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, PenLine } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LayoutTemplate, PenLine } from 'lucide-react';
 import { APP_CONFIG, PAGE_FORMATS } from '@/config/app.config';
 import { PageRenderer } from '@/components/PageRenderer';
 import { FlipBook } from '@/engine/FlipBook';
@@ -26,9 +26,10 @@ interface Props {
   initialPage: number;
   onPageChange: (page: number) => void;
   onEdit: (page: number) => void;
+  onOpenTemplates: () => void;
 }
 
-export function Reader({ initialPage, onPageChange, onEdit }: Props) {
+export function Reader({ initialPage, onPageChange, onEdit, onOpenTemplates }: Props) {
   const { book } = useBook();
   const pageCount = book.pages.length;
   const narrow = useMediaQuery(`(max-width: ${APP_CONFIG.singlePageBreakpoint}px)`);
@@ -196,9 +197,14 @@ export function Reader({ initialPage, onPageChange, onEdit }: Props) {
           <div className="reader-empty card" role="note">
             <strong>Tu publicación está en blanco</strong>
             <span className="muted">Agrega textos, imágenes y formas desde el editor. Todo se guarda en este equipo.</span>
-            <button type="button" className="btn btn-primary btn-sm" onClick={() => onEdit(current)}>
-              <PenLine size={16} /> Abrir el editor
-            </button>
+            <div className="row wrap" style={{ justifyContent: 'center' }}>
+              <button type="button" className="btn btn-primary btn-sm" onClick={onOpenTemplates}>
+                <LayoutTemplate size={16} /> Elegir una plantilla
+              </button>
+              <button type="button" className="btn btn-sm" onClick={() => onEdit(current)}>
+                <PenLine size={16} /> Empezar en blanco
+              </button>
+            </div>
           </div>
         )}
       </div>

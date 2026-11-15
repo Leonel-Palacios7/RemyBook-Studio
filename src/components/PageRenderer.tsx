@@ -1,7 +1,7 @@
-import { memo } from 'react';
+import { memo, useId } from 'react';
 import type { ImageElement, Page, PageElement, ShapeElement, TextElement } from '@/domain/types';
 import { safeColor, safeImageUrl } from '@/lib/sanitize';
-import { elementBoxStyle, textStyle } from './elementStyles';
+import { elementBoxStyle, maskStyle, shapeFill, textStyle } from './elementStyles';
 import './page.css';
 
 function TextContent({ el }: { el: TextElement }) {
@@ -14,10 +14,24 @@ function TextContent({ el }: { el: TextElement }) {
 
 function ImageContent({ el }: { el: ImageElement }) {
   const src = safeImageUrl(el.src);
+  const mask = maskStyle(el.mask, el.radius);
   if (!src) {
     return (
-      <div className="pr-image-empty" role="img" aria-label={el.alt || 'Imagen sin fuente'}>
-        Imagen
+      <div
+        className="pr-image-empty"
+        style={{
+          ...mask,
+          ...(el.placeholder
+            ? { background: `radial-gradient(circle at 30% 25%, rgb(255 255 255 / 0.45), transparent 60%), ${safeColor(el.placeholder, '#dfe7da')}` }
+            : null),
+        }}
+        role="img" aria-label={el.alt || 'Espacio para imagen'}>
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="3" />
+          <circle cx="9" cy="9" r="2" />
+          <path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21" />
+        </svg>
+        {el.alt && <span>{el.alt}</span>}
       </div>
     );
   }
@@ -30,30 +44,52 @@ function ImageContent({ el }: { el: ImageElement }) {
       loading="lazy"
       decoding="async"
       referrerPolicy="no-referrer"
-      style={{ objectFit: el.fit, borderRadius: `${el.radius}cqw` }}
+      style={{ objectFit: el.fit, ...mask }}
     />
   );
 }
 
-const POLYGONS: Partial<Record<ShapeElement['shape'], string>> = {
-  triangle: '50,0 100,100 0,100',
-  star: '50,2 61,37 98,37 68,59 79,95 50,73 21,95 32,59 2,37 39,37',
-  arrow: '0,30 62,30 62,5 100,50 62,95 62,70 0,70',
+/** Siluetas vectoriales en un lienzo de 100 × 100 (se estiran con la caja). */
+const PATHS: Partial<Record<ShapeElement['shape'], string>> = {
+  triangle: 'M50,0 L100,100 L0,100 Z',
+  star: 'M50,2 L61,37 L98,37 L68,59 L79,95 L50,73 L21,95 L32,59 L2,37 L39,37 Z',
+  arrow: 'M0,30 L62,30 L62,5 L100,50 L62,95 L62,70 L0,70 Z',
+  wave: 'M0,35 C18,10 32,10 50,35 C68,60 82,60 100,35 L100,100 L0,100 Z',
+  blob: 'M52,3 C76,1 97,19 97,46 C98,74 80,97 51,97 C24,98 3,80 3,53 C2,26 23,5 52,3 Z',
+  hexagon: 'M25,3 L75,3 L100,50 L75,97 L25,97 L0,50 Z',
+  diamond: 'M50,0 L100,50 L50,100 L0,50 Z',
+  leaf: 'M0,100 C0,40 40,0 100,0 C100,60 60,100 0,100 Z',
 };
+
+function gradientVector(angle: number) {
+  // Convierte el ángulo CSS (0° = hacia arriba) a coordenadas del degradado SVG.
+  const rad = ((angle - 90) * Math.PI) / 180;
+  const x = Math.cos(rad) / 2;
+  const y = Math.sin(rad) / 2;
+  return { x1: 0.5 - x, y1: 0.5 - y, x2: 0.5 + x, y2: 0.5 + y };
+}
 
 function ShapeContent({ el }: { el: ShapeElement }) {
   const fill = safeColor(el.fill);
   const stroke = safeColor(el.stroke);
-  if (el.shape === 'line') {
-    return <div className="pr-shape" style={{ background: fill, borderRadius: `${el.radius}cqw` }} />;
-  }
-  const polygon = POLYGONS[el.shape];
-  if (polygon) {
+  const uid = useId();
+  const d = PATHS[el.shape];
+  if (d) {
+    const gradId = `g${uid.replace(/:/g, '')}`;
+    const v = gradientVector(el.gradientAngle ?? 180);
     return (
       <svg className="pr-shape" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <polygon
-          points={polygon}
-          fill={fill}
+        {el.fillTo && (
+          <defs>
+            <linearGradient id={gradId} {...v}>
+              <stop offset="0" stopColor={fill} />
+              <stop offset="1" stopColor={safeColor(el.fillTo)} />
+            </linearGradient>
+          </defs>
+        )}
+        <path
+          d={d}
+          fill={el.fillTo ? `url(#${gradId})` : fill}
           stroke={stroke}
           vectorEffect="non-scaling-stroke"
           style={{ strokeWidth: `${el.strokeWidth}cqw` }}
@@ -62,13 +98,15 @@ function ShapeContent({ el }: { el: ShapeElement }) {
       </svg>
     );
   }
+  const radius =
+    el.shape === 'ellipse' ? '50%' : el.shape === 'arch' ? '9999px 9999px 0 0' : `${el.radius}cqw`;
   return (
     <div
       className="pr-shape"
       style={{
-        background: fill,
-        border: el.strokeWidth > 0 ? `${el.strokeWidth}cqw solid ${stroke}` : undefined,
-        borderRadius: el.shape === 'ellipse' ? '50%' : `${el.radius}cqw`,
+        background: shapeFill(el),
+        border: el.strokeWidth > 0 && el.shape !== 'line' ? `${el.strokeWidth}cqw solid ${stroke}` : undefined,
+        borderRadius: radius,
       }}
     />
   );
