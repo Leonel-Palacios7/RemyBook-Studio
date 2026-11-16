@@ -4,7 +4,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Hand,
+  Pointer,
   LayoutGrid,
   ListOrdered,
   Maximize,
@@ -143,11 +143,11 @@ export function ReaderToolbar(p: Props) {
             type="button"
             className={`icon-btn on-dark sm${p.hands ? '' : ' is-off'}`}
             onClick={p.onToggleHands}
-            aria-label={p.hands ? 'Ocultar manos del lector' : 'Mostrar manos del lector'}
+            aria-label={p.hands ? 'Ocultar manito del cursor' : 'Mostrar manito del cursor'}
             aria-pressed={p.hands}
-            title={p.hands ? 'Ocultar manos (H)' : 'Mostrar manos (H)'}
+            title={p.hands ? 'Ocultar manito (H)' : 'Mostrar manito (H)'}
           >
-            <Hand size={18} />
+            <Pointer size={18} />
           </button>
         )}
         <button type="button" className="icon-btn on-dark sm" onClick={p.onShare} aria-label="Compartir" title="Compartir">

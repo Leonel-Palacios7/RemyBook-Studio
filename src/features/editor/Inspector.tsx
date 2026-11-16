@@ -27,7 +27,7 @@ import { parseBookJson } from '@/content/schema';
 import { downloadText, readFileAsText, readImageAsDataUrl, slugify } from '@/lib/browser';
 import { safeImageUrl } from '@/lib/sanitize';
 import type { BookAction } from '@/store/bookReducer';
-import { DEFAULT_HANDS, SKIN_TONES } from '@/engine/hands';
+import { DEFAULT_HANDS } from '@/engine/hands';
 import { DEFAULT_SOUND_STYLE, playPageTurn, SOUND_STYLES, type SoundStyle } from '@/engine/sound';
 import { ColorField, NumberField, RangeField, Section, Segmented } from './fields';
 
@@ -501,31 +501,8 @@ function BookPanel({ book, dispatch, notify }: { book: Book; dispatch: Props['di
         )}
         <label className="check">
           <input type="checkbox" checked={hands.enabled} onChange={(e) => setHands({ enabled: e.target.checked })} />
-          Mostrar manos del lector
+          Mostrar manito del cursor al pasar página
         </label>
-        {hands.enabled && (
-          <>
-            <div className="field">
-              <span>Tono de piel</span>
-              <div className="swatches" role="radiogroup" aria-label="Tono de piel">
-                {SKIN_TONES.map((t) => (
-                  <button
-                    key={t.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={hands.tone.toLowerCase() === t.value.toLowerCase()}
-                    aria-label={t.label}
-                    title={t.label}
-                    className={`swatch${hands.tone.toLowerCase() === t.value.toLowerCase() ? ' is-active' : ''}`}
-                    style={{ background: t.value }}
-                    onClick={() => setHands({ tone: t.value })}
-                  />
-                ))}
-              </div>
-            </div>
-            <ColorField label="Color de la manga" value={hands.sleeve} onChange={(sleeve) => setHands({ sleeve })} />
-          </>
-        )}
         <RangeField
           label="Velocidad del giro"
           value={book.settings.flipDuration}

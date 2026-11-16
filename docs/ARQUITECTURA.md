@@ -68,15 +68,16 @@ Dominio y contenido (domain/types, content/*.json + schema Zod, config/)
   arrastre. El lector aplica la preferencia de la publicación (`settings.pageSound`) y el silencio
   del lector (guardado en el navegador).
 
-### Manos del lector (`ReaderHands.tsx`, `hands.ts`)
+### Manito del cursor (`ReaderHands.tsx`)
 
-- Dibujo SVG original realista con volumen 3D: cada parte pasa por un filtro que usa su silueta difuminada como relieve y la ilumina (`feDiffuseLighting` + `feSpecularLighting`, luz siempre desde arriba a la izquierda, también en la mano en espejo) y añade grano de piel (`feTurbulence`); uña con lúnula y brillo, pliegues y sombra de contacto, con el pulgar sobre la hoja y los demás dedos detrás del borde; decorativo (`aria-hidden`, sin eventos). Se ancla a los bordes del libro dentro
-  de `.fb-frame`; durante un giro, la mano del lado que empuja sigue el borde libre de la hoja
-  (`spine + ancho·cos θ`) y la suelta poco a poco: su posición es una mezcla continua
-  (curva suave entre el 30 % y el 92 % del giro) entre el borde y el reposo, sin saltos ni
-  transiciones CSS durante el giro. La mano se mueve solo con `transform` (`translate3d`), así la tarjeta gráfica la desplaza sin volver a pintar los filtros. La otra mano recibe la hoja con una leve presión.
-- La publicación decide si existen y su apariencia (`settings.hands`: `enabled`, `tone`, `sleeve`);
-  quien lee puede ocultarlas con el botón de la barra o la tecla `H` (guardado en el navegador).
+- Dibujo SVG original al estilo del puntero clásico, decorativo (`aria-hidden`, sin eventos). En
+  reposo señala, con un toquecito periódico, la esquina de la hoja que se puede pasar (derecha, o
+  izquierda en la última página). Al girar cambia a puño y sigue el borde libre de la hoja
+  (`spine + ancho·cos θ`); al terminar vuelve a la esquina con una transición.
+- Se mueve solo con `transform` (`translate3d`). Con mouse sobre el libro se oculta, porque el
+  cursor real ya cumple esa función.
+- La publicación decide si se muestra (`settings.hands.enabled`); quien lee puede ocultarla con el
+  botón de la barra o la tecla `H` (guardado en el navegador).
 
 ## Estado (`src/store`)
 

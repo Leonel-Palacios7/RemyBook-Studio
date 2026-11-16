@@ -22,8 +22,9 @@ y se edita libremente, sin límites de páginas ni de elementos.
   por defecto, y «Libro abriéndose», en `src/assets/sounds/`) y tres sintetizados en el navegador
   («Papel suave», «Brisa y campanita» y «Papel clásico»). Se silencia con el botón
   de la barra o la tecla `M`; en el editor se elige el estilo, se prueba y se puede desactivar.
-- Manos de lector realistas con volumen 3D (luz, brillo y textura de piel), vistas desde arriba: pulgar sobre la hoja y dedos detrás del borde, que sostienen el libro y acompañan la hoja al girar. Se ocultan con el
-  botón de la mano o la tecla `H`; en el editor se activan o desactivan y se elige tono de piel y manga.
+- Manito de cursor (estilo puntero clásico) que señala la esquina de la hoja y la arrastra al pasar
+  página; se oculta mientras el mouse está sobre el libro. Botón de la barra o tecla `H` para
+  ocultarla, y opción en el editor para desactivarla.
 - Teclado: `←` `→` `Re Pág` `Av Pág` `Inicio` `Fin` `+` `-` `0` `F` `M` `H` `Esc`.
 
 **Plantillas de turismo (10)**

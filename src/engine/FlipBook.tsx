@@ -11,7 +11,6 @@ import {
   type FlipMode,
 } from './layout';
 import { ReaderHands } from './ReaderHands';
-import type { HandsLook } from './hands';
 import './flipbook.css';
 
 export interface Turning {
@@ -36,7 +35,8 @@ export interface FlipBookProps {
   /** Desactiva el arrastre (p. ej. con zoom activo). */
   dragDisabled?: boolean;
   /** Manos del lector (null = ocultas). */
-  hands?: HandsLook | null;
+  /** Muestra la manito del cursor que señala y arrastra la hoja. */
+  hands?: boolean;
   /** Se llama cuando una hoja empieza a moverse (para el sonido). */
   onTurnStart?: (direction: 1 | -1) => void;
 }
@@ -71,7 +71,7 @@ export function FlipBook({
   paperColor = '#ffffff',
   dragDisabled = false,
   onTurnStart,
-  hands = null,
+  hands = false,
 }: FlipBookProps) {
   const [displayView, setDisplayView] = useState(view);
   const [turning, setTurning] = useState<Turning | null>(null);
@@ -286,10 +286,9 @@ export function FlipBook({
           mode={mode}
           pageWidth={pageWidth}
           pageHeight={pageHeight}
-          hasLeft={leftPage !== null || (turning !== null && turning.direction === -1)}
-          hasRight={rightPage !== null || (turning !== null && turning.direction === 1)}
+          canNext={displayView < last}
+          canPrev={displayView > 0}
           turn={turning ? { angle: leafAngle(turning.leaf, displayView, turning), direction: turning.direction } : null}
-          look={hands}
         />
       )}
       </div>

@@ -90,9 +90,8 @@ export const bookSchema = z.object({
       hands: z
         .object({
           enabled: z.boolean(),
-          tone: str(60),
-          sleeve: str(60),
         })
+        .loose()
         .optional(),
     })
     .loose(),

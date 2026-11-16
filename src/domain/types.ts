@@ -111,11 +111,8 @@ export interface Page {
 export type PageFormat = 'a4-portrait' | 'a4-landscape' | 'letter-portrait' | 'square' | 'widescreen';
 
 export interface ReaderHandsSettings {
+  /** Mostrar la manito del cursor en el lector. */
   enabled: boolean;
-  /** Tono de piel en hexadecimal. */
-  tone: string;
-  /** Color de la manga en hexadecimal. */
-  sleeve: string;
 }
 
 export interface BookSettings {
@@ -128,7 +125,7 @@ export interface BookSettings {
   pageSound?: boolean;
   /** Estilo del sonido al pasar página. */
   pageSoundStyle?: 'hojas' | 'libro' | 'suave' | 'brisa' | 'clasico';
-  /** Manos del lector en pantalla (por defecto visibles). */
+  /** Manito del cursor en el lector (por defecto visible). */
   hands?: ReaderHandsSettings;
   /** Sonido / efectos futuros: reservado para nuevas versiones. */
   [key: string]: unknown;

@@ -18,7 +18,6 @@ import {
 import { isFullscreen, shareLink, toggleFullscreen } from '@/lib/browser';
 import { isEditableTarget, useElementSize, useMediaQuery, usePrefersReducedMotion, useToast } from '@/lib/hooks';
 import { buildHash } from '@/lib/router';
-import { safeColor } from '@/lib/sanitize';
 import { useBook } from '@/store/BookProvider';
 import { ReaderToolbar } from './ReaderToolbar';
 import { SidePanel, type PanelKind } from './SidePanel';
@@ -98,10 +97,7 @@ export function Reader({ initialPage, onPageChange, onEdit, onOpenTemplates }: P
   useEffect(() => {
     if (soundEnabled && !muted) preloadPageTurn(soundStyle);
   }, [muted, soundEnabled, soundStyle]);
-  const handsLook = useMemo(
-    () => (handsEnabled && !handsHidden ? { tone: safeColor(handsSettings.tone, DEFAULT_HANDS.tone), sleeve: safeColor(handsSettings.sleeve, DEFAULT_HANDS.sleeve) } : null),
-    [handsEnabled, handsHidden, handsSettings.sleeve, handsSettings.tone],
-  );
+  const showHands = handsEnabled && !handsHidden;
   const [toast, setToast] = useToast();
   const rootRef = useRef<HTMLDivElement>(null);
   const [stageRef, stage] = useElementSize<HTMLDivElement>();
@@ -252,7 +248,7 @@ export function Reader({ initialPage, onPageChange, onEdit, onOpenTemplates }: P
               renderPage={renderPage}
               dragDisabled={zoom > 1}
               onTurnStart={onTurnStart}
-              hands={handsLook}
+              hands={showHands}
             />
           )}
         </div>
