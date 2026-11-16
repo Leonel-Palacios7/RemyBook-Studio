@@ -29,93 +29,145 @@ function shade(hex: string, t: number): string {
   return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 }
 
-function HandSvg({ look }: { look: HandsLook }) {
+/**
+ * Filtro de volumen: usa la silueta difuminada como mapa de relieve y la ilumina
+ * (luz difusa + brillo especular) para que cada parte se vea redondeada, como
+ * en 3D. Añade un grano muy fino que imita la textura de la piel.
+ */
+function VolumeFilter({ id, blur, depth, azimuth, gloss }: { id: string; blur: number; depth: number; azimuth: number; gloss: number }) {
+  return (
+    <filter id={id} x="-15%" y="-15%" width="130%" height="130%" colorInterpolationFilters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation={blur} result="bump" />
+      <feDiffuseLighting in="bump" surfaceScale={depth} diffuseConstant="1.2" lightingColor="#ffffff" result="diffuse">
+        <feDistantLight azimuth={azimuth} elevation="48" />
+      </feDiffuseLighting>
+      <feComposite in="SourceGraphic" in2="diffuse" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="lit" />
+      <feSpecularLighting in="bump" surfaceScale={depth} specularConstant={gloss} specularExponent="24" lightingColor="#fff6ee" result="spec">
+        <feDistantLight azimuth={azimuth} elevation="48" />
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn" />
+      <feComposite in="lit" in2="specIn" operator="arithmetic" k1="0" k2="1" k3="0.45" k4="0" result="shiny" />
+      <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" seed="7" result="noise" />
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.3  0 0 0 0 0.16  0 0 0 0 0.08  0 0 0 -0.5 0.3" result="grain" />
+      <feComposite in="grain" in2="SourceAlpha" operator="in" result="grainIn" />
+      <feBlend in="grainIn" in2="shiny" mode="multiply" />
+    </filter>
+  );
+}
+
+function HandSvg({ look, mirrored }: { look: HandsLook; mirrored: boolean }) {
   const id = useId().replace(/:/g, '');
   const skin = look.tone;
-  const light = shade(skin, 0.22);
-  const dark = shade(skin, -0.28);
-  const deep = shade(skin, -0.45);
-  const crease = shade(skin, -0.5);
-  const nail = shade(skin, 0.45);
+  const warm = shade(skin, 0.12);
+  const dark = shade(skin, -0.22);
+  const deep = shade(skin, -0.42);
+  const crease = shade(skin, -0.55);
+  const nail = shade(skin, 0.5);
+  const nailBed = shade(skin, 0.3);
+  // La mano izquierda se dibuja en espejo: se corrige la luz para que siempre venga de arriba a la izquierda.
+  const az = mirrored ? 315 : 225;
+  const f = (name: string) => `url(#${name}${id})`;
   return (
     <svg viewBox={`0 0 ${VB.w} ${VB.h}`} width="100%" height="100%" aria-hidden="true" focusable="false">
       <defs>
-        <linearGradient id={`back${id}`} x1="0" y1="0" x2="1" y2="0.6">
-          <stop offset="0" stopColor={light} />
-          <stop offset="0.45" stopColor={skin} />
+        <VolumeFilter id={`volS${id}`} blur={5} depth={6} azimuth={az} gloss={0.5} />
+        <VolumeFilter id={`volL${id}`} blur={11} depth={9} azimuth={az} gloss={0.35} />
+        <linearGradient id={`skin${id}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor={warm} />
+          <stop offset="1" stopColor={skin} />
+        </linearGradient>
+        <linearGradient id={`behind${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={skin} />
           <stop offset="1" stopColor={dark} />
         </linearGradient>
-        <linearGradient id={`thumb${id}`} x1="0.2" y1="0" x2="0.8" y2="1">
-          <stop offset="0" stopColor={light} />
-          <stop offset="0.55" stopColor={skin} />
-          <stop offset="1" stopColor={dark} />
+        <linearGradient id={`nail${id}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor={nail} />
+          <stop offset="1" stopColor={nailBed} />
         </linearGradient>
-        <linearGradient id={`behind${id}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor={dark} />
-          <stop offset="0.5" stopColor={skin} />
-          <stop offset="1" stopColor={deep} />
-        </linearGradient>
-        <radialGradient id={`glow${id}`} cx="0.35" cy="0.3" r="0.6">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.28" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
-        </radialGradient>
         <linearGradient id={`fadeG${id}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0.8" stopColor="#fff" />
           <stop offset="1" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
         <mask id={`fade${id}`}>
-          <rect width={VB.w} height={VB.h} fill={`url(#fadeG${id})`} />
+          <rect width={VB.w} height={VB.h} fill={f('fadeG')} />
         </mask>
         <filter id={`soft${id}`} x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="5" />
+          <feGaussianBlur stdDeviation="6" />
+        </filter>
+        <filter id={`contact${id}`} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.5" />
         </filter>
       </defs>
-      <g mask={`url(#fade${id})`}>
-        {/* Sombra suave de la mano sobre la página y la mesa */}
+      <g mask={f('fade')}>
+        {/* Sombra difusa sobre la página y sombra de contacto bajo la yema */}
         <path
           d="M130 220 C110 198 84 172 58 150 C42 136 24 124 20 112 C16 98 28 90 42 94 C60 100 84 120 104 138 C150 140 196 178 196 228 C196 268 186 300 182 320 L118 320 Z"
           fill="#000"
-          opacity="0.28"
-          filter={`url(#soft${id})`}
-          transform="translate(6 9)"
+          opacity="0.3"
+          filter={f('soft')}
+          transform="translate(7 10)"
         />
-        {/* Dedos doblados por detrás del borde de la hoja: solo asoman los nudillos */}
-        <path d="M130 156 C130 138 134 126 145 125 C156 124 160 136 160 150 L160 168 Z" fill={`url(#behind${id})`} />
-        <path d="M106 148 C104 128 108 112 119 110 C130 108 136 119 136 134 L138 152 Z" fill={`url(#behind${id})`} />
-        <path d="M82 150 C78 128 76 108 78 94 C80 82 94 80 98 92 C102 108 106 130 110 152 Z" fill={`url(#back${id})`} />
-        <path d="M84 100 C88 97 93 97 97 100" fill="none" stroke={crease} strokeOpacity="0.4" strokeWidth="1.6" strokeLinecap="round" />
-        {/* Dorso de la mano, muñeca y antebrazo */}
-        <path
-          d="M82 146 C94 134 134 134 158 142 C180 152 190 182 188 214 C186 248 176 278 172 320 L106 320 C104 280 96 248 88 212 C82 190 79 166 82 146 Z"
-          fill={`url(#back${id})`}
-        />
-        <path d="M82 146 C94 134 134 134 158 142 C180 152 190 182 188 214 C170 192 140 180 110 186 C96 188 86 170 82 146 Z" fill={`url(#glow${id})`} />
-        {/* Tendones y nudillos, muy sutiles */}
-        <g fill="none" stroke={deep} strokeOpacity="0.22" strokeWidth="2.2" strokeLinecap="round">
-          <path d="M118 150 C126 180 134 210 140 240" />
-          <path d="M140 150 C148 178 154 206 158 236" />
-          <path d="M104 152 C110 156 118 156 124 152" />
-          <path d="M132 146 C138 150 146 150 152 146" />
+        <ellipse cx="34" cy="112" rx="16" ry="7" transform="rotate(38 34 112)" fill="#000" opacity="0.35" filter={f('contact')} />
+
+        {/* Dedos doblados por detrás del borde de la hoja */}
+        <g filter={f('volS')}>
+          <path d="M130 158 C129 140 133 126 145 125 C157 124 161 137 161 151 L161 170 Z" fill={f('behind')} />
         </g>
-        {/* Pulgar apoyado sobre la página */}
-        <path
-          d="M128 216 C108 194 82 168 56 146 C40 132 22 120 18 108 C14 94 26 86 40 90 C58 96 82 116 102 134 C118 148 132 164 142 184 Z"
-          fill={`url(#thumb${id})`}
-        />
-        <path d="M128 216 C108 194 82 168 56 146 C70 162 98 192 118 214 Z" fill={deep} opacity="0.22" filter={`url(#soft${id})`} />
-        {/* Uña */}
-        <path d="M21 104 C21 95 31 92 40 97 C48 101 49 110 43 114 C36 118 24 113 21 104 Z" fill={nail} />
-        <path d="M23 101 C27 96 35 96 41 99" fill="none" stroke="#fff" strokeOpacity="0.6" strokeWidth="1.6" strokeLinecap="round" />
-        <path d="M41 114 C46 112 48 107 47 102" fill="none" stroke={crease} strokeOpacity="0.4" strokeWidth="1.4" strokeLinecap="round" />
-        {/* Pliegues de la articulación del pulgar */}
-        <g fill="none" stroke={crease} strokeOpacity="0.45" strokeWidth="1.5" strokeLinecap="round">
-          <path d="M66 132 C70 130 76 132 78 138" />
-          <path d="M62 137 C66 136 71 138 73 143" />
-          <path d="M69 128 C72 127 75 128 77 131" />
+        <g filter={f('volS')}>
+          <path d="M105 150 C103 129 107 112 119 110 C131 108 137 120 137 135 L139 154 Z" fill={f('behind')} />
         </g>
-        {/* Manga */}
-        <path d="M96 288 C126 280 160 278 192 284 L198 320 L92 320 Z" fill={look.sleeve} />
-        <path d="M96 288 C126 280 160 278 192 284 L193 294 C160 288 126 290 97 298 Z" fill="#000" opacity="0.2" />
+        <g filter={f('volS')}>
+          <path d="M81 152 C77 129 75 108 77 94 C79 81 94 79 98 92 C102 108 106 131 111 154 Z" fill={f('skin')} />
+        </g>
+        <path d="M83 101 C87 98 93 98 97 101" fill="none" stroke={crease} strokeOpacity="0.45" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M82 106 C86 104 91 104 95 106" fill="none" stroke={crease} strokeOpacity="0.3" strokeWidth="1.1" strokeLinecap="round" />
+
+        {/* Pulgar: falange proximal y distal sobre la página */}
+        <g filter={f('volS')}>
+          <path
+            d="M120 224 C104 200 80 170 56 146 C40 132 22 120 18 108 C14 94 26 86 40 90 C58 96 82 116 102 134 C114 146 122 158 128 172 Z"
+            fill={f('skin')}
+          />
+        </g>
+        {/* Dorso, muñeca y antebrazo con volumen amplio */}
+        <g filter={f('volL')}>
+          <path
+            d="M82 146 C94 134 134 134 158 142 C180 152 190 182 188 214 C186 248 176 278 172 320 L106 320 C104 280 96 248 88 212 C82 190 79 166 82 146 Z"
+            fill={f('skin')}
+          />
+        </g>
+        {/* Nudillos y tendones */}
+        <g fill="none" stroke={deep} strokeOpacity="0.16" strokeWidth="6" strokeLinecap="round" filter={f('contact')}>
+          <path d="M118 158 C126 186 134 212 140 240" />
+          <path d="M142 158 C149 184 155 210 158 238" />
+        </g>
+        <g fill="none" stroke={crease} strokeOpacity="0.3" strokeWidth="1.2" strokeLinecap="round">
+          <path d="M94 150 C98 147 104 147 108 150" />
+          <path d="M117 145 C121 142 127 142 131 145" />
+          <path d="M140 150 C144 147 150 147 153 150" />
+        </g>
+
+        {/* Pliegues de la articulación */}
+        <g fill="none" stroke={crease} strokeLinecap="round">
+          <path d="M64 128 C68 126 74 128 77 134" strokeOpacity="0.5" strokeWidth="1.5" />
+          <path d="M60 133 C64 132 69 134 72 139" strokeOpacity="0.4" strokeWidth="1.3" />
+          <path d="M68 124 C71 123 74 124 76 127" strokeOpacity="0.35" strokeWidth="1.1" />
+        </g>
+        {/* Uña con lúnula, cutícula y brillo */}
+        <path d="M21 104 C21 95 31 92 40 97 C48 101 49 110 43 114 C36 118 24 113 21 104 Z" fill={f('nail')} />
+        <path d="M40 97 C46 100 48 106 46 111 C44 106 42 101 37 98 Z" fill="#fff" opacity="0.35" />
+        <path d="M43 114 C38 113 36 109 38 106 C41 107 44 110 45 113 Z" fill="#fff" opacity="0.4" />
+        <path d="M21 104 C21 95 31 92 40 97 C48 101 49 110 43 114 C36 118 24 113 21 104 Z" fill="none" stroke={crease} strokeOpacity="0.45" strokeWidth="1.2" />
+        <path d="M25 100 C29 96 35 96 40 99" fill="none" stroke="#fff" strokeOpacity="0.75" strokeWidth="1.6" strokeLinecap="round" />
+
+        {/* Manga con pliegues */}
+        <g filter={f('volL')}>
+          <path d="M94 288 C126 280 160 278 194 284 L200 320 L90 320 Z" fill={look.sleeve} />
+        </g>
+        <g fill="none" stroke="#000" strokeOpacity="0.18" strokeWidth="2" strokeLinecap="round">
+          <path d="M120 292 C124 302 126 312 126 320" />
+          <path d="M162 290 C160 300 160 310 162 320" />
+        </g>
       </g>
     </svg>
   );
@@ -152,12 +204,13 @@ export const ReaderHands = memo(function ReaderHands({ mode, pageWidth, pageHeig
   const place = (edgeX: number, side: 'left' | 'right', lift: number, tilt: number, visible: boolean): CSSProperties => {
     const anchorX = side === 'right' ? GRIP.x * scale : (VB.w - GRIP.x) * scale;
     const sign = side === 'right' ? 1 : -1;
+    const x = edgeX - anchorX;
+    const y = gripY - GRIP.y * scale - lift;
+    // Solo `transform` y `opacity`: la tarjeta gráfica mueve la mano sin volver a pintarla.
     return {
       width: w,
       height: h,
-      left: edgeX - anchorX,
-      top: gripY - GRIP.y * scale - lift,
-      transform: `${side === 'left' ? 'scaleX(-1) ' : ''}rotate(${tilt * sign}deg)`,
+      transform: `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) ${side === 'left' ? 'scaleX(-1) ' : ''}rotate(${(tilt * sign).toFixed(2)}deg)`,
       opacity: visible ? 1 : 0,
     };
   };
@@ -199,11 +252,11 @@ export const ReaderHands = memo(function ReaderHands({ mode, pageWidth, pageHeig
     <div className={`fb-hands${turn ? ' is-turning' : ''}`} aria-hidden="true">
       {mode === 'double' && (
         <div className="fb-hand is-left" style={place(leftX, 'left', leftLift, leftTilt, hasLeft)}>
-          <HandSvg look={look} />
+          <HandSvg look={look} mirrored />
         </div>
       )}
       <div className="fb-hand is-right" style={place(rightX, 'right', rightLift, rightTilt, hasRight)}>
-        <HandSvg look={look} />
+        <HandSvg look={look} mirrored={false} />
       </div>
     </div>
   );

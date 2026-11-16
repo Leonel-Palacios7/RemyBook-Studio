@@ -3,6 +3,8 @@ import { render } from '@testing-library/react';
 import { DEFAULT_HANDS } from './hands';
 import { ReaderHands } from './ReaderHands';
 
+const xOf = (el: Element | null) => Number(/translate3d\(([-\d.]+)px/.exec((el as HTMLElement).style.transform)![1]);
+
 const look = { tone: DEFAULT_HANDS.tone, sleeve: DEFAULT_HANDS.sleeve };
 
 describe('<ReaderHands />', () => {
@@ -32,17 +34,15 @@ describe('<ReaderHands />', () => {
       <ReaderHands mode="double" pageWidth={200} pageHeight={280} hasLeft hasRight turn={null} look={look} />,
     ).container.querySelector('.fb-hand.is-right') as HTMLElement;
     // A 90° el borde de la hoja está en el lomo: la mano se ha movido hacia el centro.
-    expect(parseFloat(right.style.left)).toBeLessThan(parseFloat(rest.style.left));
+    expect(xOf(right)).toBeLessThan(xOf(rest));
   });
 
   it('se mueve sin saltos: al terminar el giro vuelve exactamente al reposo', () => {
     const at = (angle: number) =>
-      parseFloat(
-        (
-          render(
-            <ReaderHands mode="double" pageWidth={200} pageHeight={280} hasLeft hasRight turn={{ angle, direction: 1 }} look={look} />,
-          ).container.querySelector('.fb-hand.is-right') as HTMLElement
-        ).style.left,
+      xOf(
+        render(
+          <ReaderHands mode="double" pageWidth={200} pageHeight={280} hasLeft hasRight turn={{ angle, direction: 1 }} look={look} />,
+        ).container.querySelector('.fb-hand.is-right'),
       );
     const rest = at(0);
     let prev = rest;
