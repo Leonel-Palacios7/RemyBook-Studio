@@ -4,6 +4,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Hand,
   LayoutGrid,
   ListOrdered,
   Maximize,
@@ -30,6 +31,9 @@ interface Props {
   /** true = activado, false = silenciado, null = desactivado en la publicación. */
   sound: boolean | null;
   onToggleSound: () => void;
+  /** true = visibles, false = ocultas, null = desactivadas en la publicación. */
+  hands: boolean | null;
+  onToggleHands: () => void;
   onFirst: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -132,6 +136,18 @@ export function ReaderToolbar(p: Props) {
             title={p.sound ? 'Silenciar (M)' : 'Activar sonido (M)'}
           >
             {p.sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </button>
+        )}
+        {p.hands !== null && (
+          <button
+            type="button"
+            className={`icon-btn on-dark sm${p.hands ? '' : ' is-off'}`}
+            onClick={p.onToggleHands}
+            aria-label={p.hands ? 'Ocultar manos del lector' : 'Mostrar manos del lector'}
+            aria-pressed={p.hands}
+            title={p.hands ? 'Ocultar manos (H)' : 'Mostrar manos (H)'}
+          >
+            <Hand size={18} />
           </button>
         )}
         <button type="button" className="icon-btn on-dark sm" onClick={p.onShare} aria-label="Compartir" title="Compartir">

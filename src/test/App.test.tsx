@@ -224,4 +224,33 @@ describe('integración: sonido', () => {
     await renderApp(book);
     expect(screen.queryByLabelText(/sonido de páginas/)).not.toBeInTheDocument();
   });
+
+  it('muestra y oculta las manos del lector con botón y tecla H', async () => {
+    const { container } = await renderApp();
+    await screen.findByText('1 / 8');
+    expect(container.querySelector('.fb-hands')).not.toBeNull();
+    fireEvent.click(screen.getByLabelText('Ocultar manos del lector'));
+    expect(container.querySelector('.fb-hands')).toBeNull();
+    expect(localStorage.getItem('sena-flipbook-studio:hands-hidden')).toBe('1');
+    fireEvent.keyDown(window, { key: 'h' });
+    expect(container.querySelector('.fb-hands')).not.toBeNull();
+    expect(screen.getByLabelText('Ocultar manos del lector')).toBeInTheDocument();
+  });
+
+  it('configura sonido y manos desde el editor', async () => {
+    const { container } = await renderApp();
+    fireEvent.click(screen.getByRole('button', { name: /Editor/ }));
+    await screen.findByTestId('canvas-page');
+    fireEvent.click(screen.getByRole('tab', { name: 'Publicación' }));
+    fireEvent.change(screen.getByLabelText('Tipo de sonido'), { target: { value: 'brisa' } });
+    expect((screen.getByLabelText('Tipo de sonido') as HTMLSelectElement).value).toBe('brisa');
+    fireEvent.click(screen.getByRole('radio', { name: 'Oscuro' }));
+    expect(screen.getByRole('radio', { name: 'Oscuro' })).toHaveAttribute('aria-checked', 'true');
+    fireEvent.click(screen.getByLabelText('Mostrar manos del lector'));
+    expect(screen.queryByRole('radio', { name: 'Oscuro' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Lector/ }));
+    await screen.findByText('1 / 8');
+    expect(container.querySelector('.fb-hands')).toBeNull();
+    expect(screen.queryByLabelText(/manos del lector/)).not.toBeInTheDocument();
+  });
 });

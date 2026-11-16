@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { __resetSoundForTests, playPageTurn } from './sound';
+import { __resetSoundForTests, playPageTurn, schedulePageTurn, SOUND_STYLES } from './sound';
 
 function fakeParam() {
-  return { value: 0, setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() };
+  return { value: 0, setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn() };
 }
 
 class FakeNode {
@@ -33,6 +33,14 @@ class FakeAudioContext {
   createBiquadFilter() {
     return Object.assign(new FakeNode(), { type: '', Q: fakeParam(), frequency: fakeParam() });
   }
+  oscillators = 0;
+  createOscillator() {
+    this.oscillators++;
+    return Object.assign(new FakeNode(), { type: '', frequency: fakeParam(), start: vi.fn(), stop: vi.fn() });
+  }
+  createStereoPanner() {
+    return Object.assign(new FakeNode(), { pan: fakeParam() });
+  }
   createGain() {
     return Object.assign(new FakeNode(), { gain: fakeParam() });
   }
@@ -55,6 +63,13 @@ describe('sonido de paso de página', () => {
     expect(playPageTurn({ duration: 800 })).toBe(true);
     expect(playPageTurn({ duration: 400 })).toBe(true);
     expect(FakeAudioContext.instances).toBe(1);
+  });
+
+  it.each(SOUND_STYLES.map((s) => s.value))('programa el estilo «%s»', (style) => {
+    const ac = new FakeAudioContext();
+    expect(schedulePageTurn(ac as unknown as BaseAudioContext, { style, direction: -1 })).toBe(true);
+    expect(ac.started.length).toBeGreaterThan(0);
+    if (style !== 'clasico') expect(ac.oscillators).toBeGreaterThan(0);
   });
 
   it('respeta el volumen cero', () => {

@@ -10,6 +10,8 @@ import {
   pagesInView,
   type FlipMode,
 } from './layout';
+import { ReaderHands } from './ReaderHands';
+import type { HandsLook } from './hands';
 import './flipbook.css';
 
 export interface Turning {
@@ -33,6 +35,8 @@ export interface FlipBookProps {
   paperColor?: string;
   /** Desactiva el arrastre (p. ej. con zoom activo). */
   dragDisabled?: boolean;
+  /** Manos del lector (null = ocultas). */
+  hands?: HandsLook | null;
   /** Se llama cuando una hoja empieza a moverse (para el sonido). */
   onTurnStart?: (direction: 1 | -1) => void;
 }
@@ -67,6 +71,7 @@ export function FlipBook({
   paperColor = '#ffffff',
   dragDisabled = false,
   onTurnStart,
+  hands = null,
 }: FlipBookProps) {
   const [displayView, setDisplayView] = useState(view);
   const [turning, setTurning] = useState<Turning | null>(null);
@@ -199,14 +204,16 @@ export function FlipBook({
     else if (rightPage === null && !turning) shift = pageWidth / 2;
   }
 
-  const bookStyle: CSSProperties = {
+  const frameStyle: CSSProperties = {
     width: pageWidth * columns,
     height: pageHeight,
     transform: `translateX(${shift}px)`,
   };
+  const bookStyle: CSSProperties = { width: pageWidth * columns, height: pageHeight };
 
   return (
     <div className="fb-stage" data-mode={mode}>
+      <div className="fb-frame" style={frameStyle}>
       <div
         ref={bookRef}
         className="fb-book"
@@ -273,6 +280,18 @@ export function FlipBook({
         {mode === 'double' && displayView < last && !turning && (
           <div className="fb-corner fb-corner-right" aria-hidden="true" />
         )}
+      </div>
+      {hands && (
+        <ReaderHands
+          mode={mode}
+          pageWidth={pageWidth}
+          pageHeight={pageHeight}
+          hasLeft={leftPage !== null || (turning !== null && turning.direction === -1)}
+          hasRight={rightPage !== null || (turning !== null && turning.direction === 1)}
+          turn={turning ? { angle: leafAngle(turning.leaf, displayView, turning), direction: turning.direction } : null}
+          look={hands}
+        />
+      )}
       </div>
     </div>
   );

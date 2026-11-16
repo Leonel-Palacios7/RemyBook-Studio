@@ -110,6 +110,14 @@ export interface Page {
 
 export type PageFormat = 'a4-portrait' | 'a4-landscape' | 'letter-portrait' | 'square' | 'widescreen';
 
+export interface ReaderHandsSettings {
+  enabled: boolean;
+  /** Tono de piel en hexadecimal. */
+  tone: string;
+  /** Color de la manga en hexadecimal. */
+  sleeve: string;
+}
+
 export interface BookSettings {
   format: PageFormat;
   /** Mostrar números de página en el lector. */
@@ -118,6 +126,10 @@ export interface BookSettings {
   flipDuration: number;
   /** Sonido al pasar de página (por defecto activado). */
   pageSound?: boolean;
+  /** Estilo del sonido al pasar página. */
+  pageSoundStyle?: 'suave' | 'brisa' | 'clasico';
+  /** Manos del lector en pantalla (por defecto visibles). */
+  hands?: ReaderHandsSettings;
   /** Sonido / efectos futuros: reservado para nuevas versiones. */
   [key: string]: unknown;
 }

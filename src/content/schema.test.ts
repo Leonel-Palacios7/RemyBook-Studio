@@ -44,4 +44,12 @@ describe('formas y marcos nuevos', () => {
     );
     expect(parseBook(book).ok).toBe(true);
   });
+
+  it('acepta y valida los ajustes de sonido y manos', () => {
+    const book = createDefaultBook();
+    book.settings.pageSoundStyle = 'brisa';
+    book.settings.hands = { enabled: false, tone: '#9A6440', sleeve: '#39A900' };
+    expect(parseBook(book).ok).toBe(true);
+    expect(parseBook({ ...book, settings: { ...book.settings, pageSoundStyle: 'trueno' } }).ok).toBe(false);
+  });
 });

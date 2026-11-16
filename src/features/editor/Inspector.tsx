@@ -13,6 +13,7 @@ import {
   ImageUp,
   Italic,
   Lock,
+  Play,
   SendToBack,
   Trash2,
   Underline,
@@ -26,6 +27,8 @@ import { parseBookJson } from '@/content/schema';
 import { downloadText, readFileAsText, readImageAsDataUrl, slugify } from '@/lib/browser';
 import { safeImageUrl } from '@/lib/sanitize';
 import type { BookAction } from '@/store/bookReducer';
+import { DEFAULT_HANDS, SKIN_TONES } from '@/engine/hands';
+import { playPageTurn, SOUND_STYLES, type SoundStyle } from '@/engine/sound';
 import { ColorField, NumberField, RangeField, Section, Segmented } from './fields';
 
 type Tab = 'element' | 'page' | 'book';
@@ -426,6 +429,8 @@ function PagePanel({ page, dispatch, notify }: { page: Page; dispatch: Props['di
 /* ---------------- Publicación ---------------- */
 
 function BookPanel({ book, dispatch, notify }: { book: Book; dispatch: Props['dispatch']; notify: (m: string) => void }) {
+  const hands = book.settings.hands ?? DEFAULT_HANDS;
+  const setHands = (patch: Partial<typeof hands>) => dispatch({ type: 'book/settings', patch: { hands: { ...hands, ...patch } } });
   const importRef = useRef<HTMLInputElement>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   return (
@@ -467,6 +472,60 @@ function BookPanel({ book, dispatch, notify }: { book: Book; dispatch: Props['di
           />
           Sonido al pasar página
         </label>
+        {book.settings.pageSound !== false && (
+          <div className="field">
+            <span>Tipo de sonido</span>
+            <div className="row">
+              <select
+                className="select"
+                aria-label="Tipo de sonido"
+                value={book.settings.pageSoundStyle ?? 'suave'}
+                onChange={(e) => dispatch({ type: 'book/settings', patch: { pageSoundStyle: e.target.value as SoundStyle } })}
+              >
+                {SOUND_STYLES.map((st) => (
+                  <option key={st.value} value={st.value}>
+                    {st.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={() => playPageTurn({ style: book.settings.pageSoundStyle ?? 'suave', duration: book.settings.flipDuration })}
+              >
+                <Play size={14} /> Probar
+              </button>
+            </div>
+            <small className="muted">{SOUND_STYLES.find((st) => st.value === (book.settings.pageSoundStyle ?? 'suave'))?.description}</small>
+          </div>
+        )}
+        <label className="check">
+          <input type="checkbox" checked={hands.enabled} onChange={(e) => setHands({ enabled: e.target.checked })} />
+          Mostrar manos del lector
+        </label>
+        {hands.enabled && (
+          <>
+            <div className="field">
+              <span>Tono de piel</span>
+              <div className="swatches" role="radiogroup" aria-label="Tono de piel">
+                {SKIN_TONES.map((t) => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={hands.tone.toLowerCase() === t.value.toLowerCase()}
+                    aria-label={t.label}
+                    title={t.label}
+                    className={`swatch${hands.tone.toLowerCase() === t.value.toLowerCase() ? ' is-active' : ''}`}
+                    style={{ background: t.value }}
+                    onClick={() => setHands({ tone: t.value })}
+                  />
+                ))}
+              </div>
+            </div>
+            <ColorField label="Color de la manga" value={hands.sleeve} onChange={(sleeve) => setHands({ sleeve })} />
+          </>
+        )}
         <RangeField
           label="Velocidad del giro"
           value={book.settings.flipDuration}

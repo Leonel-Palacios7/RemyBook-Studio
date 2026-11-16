@@ -55,12 +55,22 @@ Dominio y contenido (domain/types, content/*.json + schema Zod, config/)
 
 ### Sonido (`sound.ts`)
 
-- Sintetizado con Web Audio API: ruido rosado con filtro pasabanda que barre de agudos a medios
-  (roce del papel) y un golpe grave corto al final (la hoja se asienta). Variación aleatoria leve
-  en cada giro. No descarga archivos, por lo que respeta la CSP y no requiere licencias de audio.
+- Sintetizado con Web Audio API: ruido rosado filtrado (roce del papel), un golpe grave suave al
+  asentarse la hoja y, en el estilo «brisa», dos tonos senoidales tipo campanita. Paneo estéreo que
+  sigue la hoja según el sentido del giro y compresor final para evitar picos. Estilos en
+  `SOUND_STYLES` (`suave`, `brisa`, `clasico`), elegidos en `settings.pageSoundStyle`. No descarga
+  archivos, por lo que respeta la CSP y no requiere licencias de audio.
 - `FlipBook` expone `onTurnStart(direction)`: suena al empezar un giro por botón, teclado, clic o
   arrastre. El lector aplica la preferencia de la publicación (`settings.pageSound`) y el silencio
   del lector (guardado en el navegador).
+
+### Manos del lector (`ReaderHands.tsx`, `hands.ts`)
+
+- Dibujo SVG original, decorativo (`aria-hidden`, sin eventos). Se ancla a los bordes del libro dentro
+  de `.fb-frame`; durante un giro, la mano del lado que empuja sigue el borde libre de la hoja
+  (`spine + ancho·cos θ`) hasta el 82 % del recorrido y luego vuelve a su lugar.
+- La publicación decide si existen y su apariencia (`settings.hands`: `enabled`, `tone`, `sleeve`);
+  quien lee puede ocultarlas con el botón de la barra o la tecla `H` (guardado en el navegador).
 
 ## Estado (`src/store`)
 

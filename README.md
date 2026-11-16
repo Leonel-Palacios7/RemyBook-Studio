@@ -18,9 +18,12 @@ y se edita libremente, sin límites de páginas ni de elementos.
 - Índice (a partir de los títulos de página), miniaturas y búsqueda sin tildes ni mayúsculas.
 - Zoom (50 %–300 %), pantalla completa, compartir (Web Share o copiar enlace) e imprimir / guardar como PDF.
 - Enlaces profundos por página (`#/leer?p=5`).
-- Sonido de papel al pasar cada hoja, sintetizado en el navegador (sin archivos de audio). Se silencia
-  con el botón de la barra o la tecla `M`, y se puede desactivar por publicación en el editor.
-- Teclado: `←` `→` `Re Pág` `Av Pág` `Inicio` `Fin` `+` `-` `0` `F` `M` `Esc`.
+- Sonido de papel al pasar cada hoja, sintetizado en el navegador (sin archivos de audio), con tres
+  estilos: «Papel suave» (por defecto), «Brisa y campanita» y «Papel clásico». Se silencia con el botón
+  de la barra o la tecla `M`; en el editor se elige el estilo, se prueba y se puede desactivar.
+- Manos de lector en pantalla que sostienen el libro y acompañan la hoja al girar. Se ocultan con el
+  botón de la mano o la tecla `H`; en el editor se activan o desactivan y se elige tono de piel y manga.
+- Teclado: `←` `→` `Re Pág` `Av Pág` `Inicio` `Fin` `+` `-` `0` `F` `M` `H` `Esc`.
 
 **Plantillas de turismo (10)**
 - Brochures de 6 páginas listos para editar: *Caribe en arcos*, *Andes vertical*, *Aroma de café*,
