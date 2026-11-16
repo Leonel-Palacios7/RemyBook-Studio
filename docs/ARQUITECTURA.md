@@ -70,9 +70,11 @@ Dominio y contenido (domain/types, content/*.json + schema Zod, config/)
 
 ### Manos del lector (`ReaderHands.tsx`, `hands.ts`)
 
-- Dibujo SVG original en estilo caricatura (contorno grueso, colores planos, tres dedos y pulgar), decorativo (`aria-hidden`, sin eventos). Se ancla a los bordes del libro dentro
+- Dibujo SVG original realista (degradados de volumen, uña, pliegues, sombra difusa), con el pulgar sobre la hoja y los demás dedos detrás del borde; decorativo (`aria-hidden`, sin eventos). Se ancla a los bordes del libro dentro
   de `.fb-frame`; durante un giro, la mano del lado que empuja sigue el borde libre de la hoja
-  (`spine + ancho·cos θ`) hasta el 82 % del recorrido y luego vuelve a su lugar.
+  (`spine + ancho·cos θ`) y la suelta poco a poco: su posición es una mezcla continua
+  (curva suave entre el 30 % y el 92 % del giro) entre el borde y el reposo, sin saltos ni
+  transiciones CSS durante el giro. La otra mano recibe la hoja con una leve presión.
 - La publicación decide si existen y su apariencia (`settings.hands`: `enabled`, `tone`, `sleeve`);
   quien lee puede ocultarlas con el botón de la barra o la tecla `H` (guardado en el navegador).
 

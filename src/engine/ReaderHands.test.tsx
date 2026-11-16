@@ -27,12 +27,38 @@ describe('<ReaderHands />', () => {
       <ReaderHands mode="double" pageWidth={200} pageHeight={280} hasLeft hasRight turn={{ angle: -90, direction: 1 }} look={look} />,
     );
     const right = container.querySelector('.fb-hand.is-right') as HTMLElement;
-    expect(right).toHaveClass('is-following');
+    expect(container.querySelector('.fb-hands')).toHaveClass('is-turning');
     const rest = render(
       <ReaderHands mode="double" pageWidth={200} pageHeight={280} hasLeft hasRight turn={null} look={look} />,
     ).container.querySelector('.fb-hand.is-right') as HTMLElement;
     // A 90° el borde de la hoja está en el lomo: la mano se ha movido hacia el centro.
     expect(parseFloat(right.style.left)).toBeLessThan(parseFloat(rest.style.left));
+  });
+
+  it('se mueve sin saltos: al terminar el giro vuelve exactamente al reposo', () => {
+    const at = (angle: number) =>
+      parseFloat(
+        (
+          render(
+            <ReaderHands mode="double" pageWidth={200} pageHeight={280} hasLeft hasRight turn={{ angle, direction: 1 }} look={look} />,
+          ).container.querySelector('.fb-hand.is-right') as HTMLElement
+        ).style.left,
+      );
+    const rest = at(0);
+    let prev = rest;
+    for (let a = -2; a >= -180; a -= 2) {
+      const x = at(a);
+      expect(Math.abs(x - prev)).toBeLessThan(12);
+      prev = x;
+    }
+    expect(prev).toBeCloseTo(rest, 5);
+  });
+
+  it('oculta con transparencia la mano del lado sin página', () => {
+    const { container } = render(
+      <ReaderHands mode="double" pageWidth={200} pageHeight={280} hasLeft={false} hasRight turn={null} look={look} />,
+    );
+    expect((container.querySelector('.fb-hand.is-left') as HTMLElement).style.opacity).toBe('0');
   });
 
   it('pinta la manga con el color elegido', () => {
