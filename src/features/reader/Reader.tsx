@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, LayoutTemplate, PenLine } from 'lucide-react
 import { APP_CONFIG, PAGE_FORMATS } from '@/config/app.config';
 import { PageRenderer } from '@/components/PageRenderer';
 import { FlipBook } from '@/engine/FlipBook';
+import { playPageTurn } from '@/engine/sound';
 import {
   clampView,
   convertView,
@@ -21,6 +22,8 @@ import { ReaderToolbar } from './ReaderToolbar';
 import { SidePanel, type PanelKind } from './SidePanel';
 import { PrintView } from './PrintView';
 import './reader.css';
+
+const MUTE_KEY = 'sena-flipbook-studio:muted';
 
 interface Props {
   initialPage: number;
@@ -48,6 +51,27 @@ export function Reader({ initialPage, onPageChange, onEdit, onOpenTemplates }: P
   const [panel, setPanel] = useState<PanelKind | null>(null);
   const [query, setQuery] = useState('');
   const [fullscreen, setFullscreen] = useState(false);
+  const [muted, setMuted] = useState(() => {
+    try {
+      return localStorage.getItem(MUTE_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+  const soundEnabled = book.settings.pageSound !== false;
+  const toggleMute = useCallback(() => {
+    setMuted((m) => {
+      try {
+        localStorage.setItem(MUTE_KEY, m ? '0' : '1');
+      } catch {
+        /* sin persistencia */
+      }
+      return !m;
+    });
+  }, []);
+  const onTurnStart = useCallback(() => {
+    if (soundEnabled && !muted) playPageTurn({ duration: book.settings.flipDuration });
+  }, [book.settings.flipDuration, muted, soundEnabled]);
   const [toast, setToast] = useToast();
   const rootRef = useRef<HTMLDivElement>(null);
   const [stageRef, stage] = useElementSize<HTMLDivElement>();
@@ -120,6 +144,10 @@ export function Reader({ initialPage, onPageChange, onEdit, onOpenTemplates }: P
         case 'F':
           void toggleFullscreen(rootRef.current ?? undefined);
           break;
+        case 'm':
+        case 'M':
+          toggleMute();
+          break;
         case 'Escape':
           setPanel(null);
           break;
@@ -128,7 +156,7 @@ export function Reader({ initialPage, onPageChange, onEdit, onOpenTemplates }: P
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [last, next, prev, setView, zoomBy]);
+  }, [last, next, prev, setView, toggleMute, zoomBy]);
 
   const ratio = PAGE_FORMATS[book.settings.format]?.ratio ?? PAGE_FORMATS['a4-portrait'].ratio;
   const padX = narrow ? 16 : 120;
@@ -189,6 +217,7 @@ export function Reader({ initialPage, onPageChange, onEdit, onOpenTemplates }: P
               duration={reducedMotion ? 0 : book.settings.flipDuration}
               renderPage={renderPage}
               dragDisabled={zoom > 1}
+              onTurnStart={onTurnStart}
             />
           )}
         </div>
@@ -224,6 +253,8 @@ export function Reader({ initialPage, onPageChange, onEdit, onOpenTemplates }: P
         zoom={zoom}
         panel={panel}
         fullscreen={fullscreen}
+        sound={soundEnabled ? !muted : null}
+        onToggleSound={toggleMute}
         onFirst={() => setView(0)}
         onPrev={prev}
         onNext={next}

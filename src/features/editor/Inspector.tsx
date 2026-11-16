@@ -459,6 +459,14 @@ function BookPanel({ book, dispatch, notify }: { book: Book; dispatch: Props['di
           <input type="checkbox" checked={book.settings.showPageNumbers} onChange={(e) => dispatch({ type: 'book/settings', patch: { showPageNumbers: e.target.checked } })} />
           Mostrar números de página
         </label>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={book.settings.pageSound !== false}
+            onChange={(e) => dispatch({ type: 'book/settings', patch: { pageSound: e.target.checked } })}
+          />
+          Sonido al pasar página
+        </label>
         <RangeField
           label="Velocidad del giro"
           value={book.settings.flipDuration}

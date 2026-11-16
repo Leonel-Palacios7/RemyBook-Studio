@@ -116,6 +116,8 @@ export interface BookSettings {
   showPageNumbers: boolean;
   /** Duración del giro en milisegundos. */
   flipDuration: number;
+  /** Sonido al pasar de página (por defecto activado). */
+  pageSound?: boolean;
   /** Sonido / efectos futuros: reservado para nuevas versiones. */
   [key: string]: unknown;
 }

@@ -207,3 +207,21 @@ describe('integración: plantillas', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
+
+describe('integración: sonido', () => {
+  it('silencia y reactiva el sonido de páginas con botón y tecla M', async () => {
+    await renderApp();
+    fireEvent.click(screen.getByLabelText('Silenciar sonido de páginas'));
+    expect(screen.getByLabelText('Activar sonido de páginas')).toBeInTheDocument();
+    expect(localStorage.getItem('sena-flipbook-studio:muted')).toBe('1');
+    fireEvent.keyDown(window, { key: 'm' });
+    expect(screen.getByLabelText('Silenciar sonido de páginas')).toBeInTheDocument();
+  });
+
+  it('oculta el control si la publicación tiene el sonido desactivado', async () => {
+    const book = createDefaultBook();
+    book.settings.pageSound = false;
+    await renderApp(book);
+    expect(screen.queryByLabelText(/sonido de páginas/)).not.toBeInTheDocument();
+  });
+});

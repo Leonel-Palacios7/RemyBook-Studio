@@ -12,6 +12,8 @@ import {
   Search,
   Share2,
   ZoomIn,
+  Volume2,
+  VolumeX,
   ZoomOut,
 } from 'lucide-react';
 import { APP_CONFIG } from '@/config/app.config';
@@ -25,6 +27,9 @@ interface Props {
   zoom: number;
   panel: PanelKind | null;
   fullscreen: boolean;
+  /** true = activado, false = silenciado, null = desactivado en la publicación. */
+  sound: boolean | null;
+  onToggleSound: () => void;
   onFirst: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -117,6 +122,18 @@ export function ReaderToolbar(p: Props) {
       <span className="tb-sep" aria-hidden="true" />
 
       <div className="tb-group">
+        {p.sound !== null && (
+          <button
+            type="button"
+            className="icon-btn on-dark sm"
+            onClick={p.onToggleSound}
+            aria-label={p.sound ? 'Silenciar sonido de páginas' : 'Activar sonido de páginas'}
+            aria-pressed={!p.sound}
+            title={p.sound ? 'Silenciar (M)' : 'Activar sonido (M)'}
+          >
+            {p.sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </button>
+        )}
         <button type="button" className="icon-btn on-dark sm" onClick={p.onShare} aria-label="Compartir" title="Compartir">
           <Share2 size={18} />
         </button>

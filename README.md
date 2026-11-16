@@ -18,7 +18,9 @@ y se edita libremente, sin límites de páginas ni de elementos.
 - Índice (a partir de los títulos de página), miniaturas y búsqueda sin tildes ni mayúsculas.
 - Zoom (50 %–300 %), pantalla completa, compartir (Web Share o copiar enlace) e imprimir / guardar como PDF.
 - Enlaces profundos por página (`#/leer?p=5`).
-- Teclado: `←` `→` `Re Pág` `Av Pág` `Inicio` `Fin` `+` `-` `0` `F` `Esc`.
+- Sonido de papel al pasar cada hoja, sintetizado en el navegador (sin archivos de audio). Se silencia
+  con el botón de la barra o la tecla `M`, y se puede desactivar por publicación en el editor.
+- Teclado: `←` `→` `Re Pág` `Av Pág` `Inicio` `Fin` `+` `-` `0` `F` `M` `Esc`.
 
 **Plantillas de turismo (10)**
 - Brochures de 6 páginas listos para editar: *Caribe en arcos*, *Andes vertical*, *Aroma de café*,

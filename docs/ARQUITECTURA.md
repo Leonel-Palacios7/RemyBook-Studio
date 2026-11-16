@@ -53,6 +53,15 @@ Dominio y contenido (domain/types, content/*.json + schema Zod, config/)
 - Arrastre: se activa tras 6 px; progreso = desplazamiento / ancho; al soltar completa si supera
   30 % o si el gesto es rápido (> 0,5 px/ms), si no vuelve. Un clic sin arrastre pasa de página.
 
+### Sonido (`sound.ts`)
+
+- Sintetizado con Web Audio API: ruido rosado con filtro pasabanda que barre de agudos a medios
+  (roce del papel) y un golpe grave corto al final (la hoja se asienta). Variación aleatoria leve
+  en cada giro. No descarga archivos, por lo que respeta la CSP y no requiere licencias de audio.
+- `FlipBook` expone `onTurnStart(direction)`: suena al empezar un giro por botón, teclado, clic o
+  arrastre. El lector aplica la preferencia de la publicación (`settings.pageSound`) y el silencio
+  del lector (guardado en el navegador).
+
 ## Estado (`src/store`)
 
 - `bookReducer` es una función pura con acciones tipadas (`page/*`, `element/*`, `book/*`,

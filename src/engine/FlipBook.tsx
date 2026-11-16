@@ -33,6 +33,8 @@ export interface FlipBookProps {
   paperColor?: string;
   /** Desactiva el arrastre (p. ej. con zoom activo). */
   dragDisabled?: boolean;
+  /** Se llama cuando una hoja empieza a moverse (para el sonido). */
+  onTurnStart?: (direction: 1 | -1) => void;
 }
 
 interface DragState {
@@ -64,6 +66,7 @@ export function FlipBook({
   renderPage,
   paperColor = '#ffffff',
   dragDisabled = false,
+  onTurnStart,
 }: FlipBookProps) {
   const [displayView, setDisplayView] = useState(view);
   const [turning, setTurning] = useState<Turning | null>(null);
@@ -71,6 +74,9 @@ export function FlipBook({
   const drag = useRef<DragState | null>(null);
   const bookRef = useRef<HTMLDivElement>(null);
   const last = maxView(mode, pageCount);
+  // Referencia estable para no reiniciar efectos cuando cambia la función del padre.
+  const turnStartRef = useRef(onTurnStart);
+  turnStartRef.current = onTurnStart;
 
   const stop = useCallback(() => {
     cancelRef.current?.();
@@ -103,6 +109,7 @@ export function FlipBook({
     const direction: 1 | -1 = target > displayView ? 1 : -1;
     const leaf = direction === 1 ? target - 1 : target;
     setDisplayView(target);
+    turnStartRef.current?.(direction);
     runTurn({ leaf, direction }, 0, 1);
     // displayView se omite a propósito: solo reaccionamos a cambios externos.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -146,6 +153,7 @@ export function FlipBook({
       d.started = true;
       bookRef.current?.setPointerCapture?.(e.pointerId);
       setDisplayView(target);
+      turnStartRef.current?.(d.direction);
     }
     const now = performance.now();
     d.velocity = (e.clientX - d.lastX) / Math.max(1, now - d.lastT);

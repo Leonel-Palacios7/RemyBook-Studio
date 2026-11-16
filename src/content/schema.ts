@@ -85,6 +85,7 @@ export const bookSchema = z.object({
       format: z.enum(['a4-portrait', 'a4-landscape', 'letter-portrait', 'square', 'widescreen']),
       showPageNumbers: z.boolean(),
       flipDuration: num(0, 5000),
+      pageSound: z.boolean().optional(),
     })
     .loose(),
   pages: z.array(pageSchema).min(1),
