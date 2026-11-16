@@ -127,7 +127,7 @@ export interface BookSettings {
   /** Sonido al pasar de página (por defecto activado). */
   pageSound?: boolean;
   /** Estilo del sonido al pasar página. */
-  pageSoundStyle?: 'suave' | 'brisa' | 'clasico';
+  pageSoundStyle?: 'hojas' | 'libro' | 'suave' | 'brisa' | 'clasico';
   /** Manos del lector en pantalla (por defecto visibles). */
   hands?: ReaderHandsSettings;
   /** Sonido / efectos futuros: reservado para nuevas versiones. */

@@ -1,4 +1,4 @@
-import { memo, useId, type CSSProperties } from 'react';
+import { memo, type CSSProperties } from 'react';
 import type { FlipMode } from './layout';
 import type { HandsLook } from './hands';
 
@@ -13,58 +13,46 @@ import type { HandsLook } from './hands';
 const VB = { w: 240, h: 200 };
 const GRIP = { x: 70, y: 100 };
 
+/** Tinta del contorno: café muy oscuro, más amable que el negro puro. */
+const INK = '#2B1D12';
+
+/**
+ * Mano en estilo caricatura: colores planos, contorno grueso, tres dedos
+ * gorditos que abrazan el borde de la hoja y el pulgar arriba. Dibujo original.
+ */
 function HandSvg({ look }: { look: HandsLook }) {
-  const id = useId().replace(/:/g, '');
+  const skin = look.tone;
+  const finger = (y: number, w: number, tilt: number) => (
+    <g transform={`rotate(${tilt} 92 ${y + 12.5})`}>
+      <rect x={62} y={y} width={w} height={25} rx={12.5} fill={skin} />
+      <path d={`M${72} ${y + 6} h${w * 0.38}`} stroke="#fff" strokeOpacity="0.55" strokeWidth="3.5" />
+      <path d={`M${88} ${y + 7} q-3 6 0 12`} fill="none" strokeWidth="2.6" strokeOpacity="0.55" />
+    </g>
+  );
   return (
     <svg viewBox={`0 0 ${VB.w} ${VB.h}`} width="100%" height="100%" aria-hidden="true" focusable="false">
-      <defs>
-        <linearGradient id={`skin${id}`} x1="0" y1="0" x2="0.3" y2="1">
-          <stop offset="0" stopColor={look.tone} />
-          <stop offset="1" stopColor={look.tone} stopOpacity="0.92" />
-        </linearGradient>
-        <linearGradient id={`shade${id}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.18" />
-          <stop offset="0.55" stopColor="#000" stopOpacity="0" />
-          <stop offset="1" stopColor="#000" stopOpacity="0.22" />
-        </linearGradient>
-        <filter id={`soft${id}`} x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="3.5" />
-        </filter>
-      </defs>
-      {/* Sombra del pulgar sobre la página */}
-      <path
-        d="M101 134 C83 132 53 124 31 118 C17 114 13 102 25 98 C39 94 65 102 87 110 C99 114 107 122 101 134 Z"
-        fill="#000"
-        opacity="0.22"
-        filter={`url(#soft${id})`}
-      />
-      {/* Antebrazo */}
-      <path d="M118 118 C150 132 200 146 240 154 L240 200 L152 200 C136 180 120 160 108 140 Z" fill={`url(#skin${id})`} />
-      {/* Dorso de la mano */}
-      <path
-        d="M64 70 C68 50 96 42 122 48 C152 55 174 76 176 102 C178 130 162 152 136 160 C110 166 80 156 68 134 C60 118 60 88 64 70 Z"
-        fill={`url(#skin${id})`}
-      />
-      <path
-        d="M64 70 C68 50 96 42 122 48 C152 55 174 76 176 102 C178 130 162 152 136 160 C110 166 80 156 68 134 C60 118 60 88 64 70 Z"
-        fill={`url(#shade${id})`}
-      />
-      {/* Nudillos (los dedos quedan detrás de la hoja) */}
-      <g fill="none" stroke="#000" strokeOpacity="0.13" strokeWidth="2.2" strokeLinecap="round">
-        <path d="M70 76 C80 73 92 75 101 80" />
-        <path d="M68 95 C80 93 92 95 102 99" />
-        <path d="M69 114 C80 113 92 116 101 120" />
+      <g stroke={INK} strokeWidth="5" strokeLinejoin="round" strokeLinecap="round">
+        {/* Sombra plana de los dedos sobre la página */}
+        <path d="M58 76 h18 v76 h-18 q-10 -38 0 -76 Z" fill="#000" opacity="0.12" stroke="none" />
+        {/* Antebrazo */}
+        <path d="M146 88 C172 96 194 108 214 120 L200 186 C178 174 156 160 134 146 Z" fill={skin} />
+        {/* Manga con puño */}
+        <path d="M204 108 Q224 100 244 98 L244 206 L184 206 Q188 152 204 108 Z" fill={look.sleeve} />
+        <path d="M204 108 Q214 104 222 102 Q206 150 202 206 L184 206 Q188 152 204 108 Z" fill="#fff" opacity="0.28" stroke="none" />
+        <path d="M222 102 Q206 150 202 206" fill="none" strokeWidth="3.5" />
+        {/* Dorso de la mano */}
+        <path d="M96 68 C108 50 144 48 162 68 C178 88 176 122 160 142 C144 158 110 156 98 140 Z" fill={skin} />
+        <path d="M150 62 C164 74 170 92 168 110" fill="none" stroke="#fff" strokeOpacity="0.5" strokeWidth="4" />
+        {/* Tres dedos que abrazan el borde de la hoja (de abajo hacia arriba) */}
+        {finger(116, 54, 4)}
+        {finger(91, 60, 0)}
+        {finger(66, 58, -4)}
+        {/* Pulgar arriba */}
+        <g transform="rotate(-24 112 58)">
+          <rect x={84} y={46} width={58} height={25} rx={12.5} fill={skin} />
+          <path d="M94 52 h20" stroke="#fff" strokeOpacity="0.55" strokeWidth="3.5" />
+        </g>
       </g>
-      {/* Pulgar sobre la página */}
-      <path
-        d="M98 128 C80 126 50 118 28 112 C14 108 10 96 22 92 C36 88 62 96 84 104 C96 108 104 116 98 128 Z"
-        fill={`url(#skin${id})`}
-      />
-      <path d="M98 128 C80 126 50 118 28 112 C40 112 70 116 98 122 Z" fill="#000" opacity="0.08" />
-      <ellipse cx="24" cy="99.5" rx="8" ry="4.6" fill="#fff" opacity="0.38" transform="rotate(-12 24 99.5)" />
-      {/* Manga */}
-      <path d="M196 146 C212 150 228 153 240 155 L240 200 L178 200 C184 182 190 164 196 146 Z" fill={look.sleeve} />
-      <path d="M196 146 C190 164 184 182 178 200 L186 200 C192 182 198 164 204 148 Z" fill="#000" opacity="0.18" />
     </svg>
   );
 }

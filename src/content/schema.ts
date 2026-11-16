@@ -86,7 +86,7 @@ export const bookSchema = z.object({
       showPageNumbers: z.boolean(),
       flipDuration: num(0, 5000),
       pageSound: z.boolean().optional(),
-      pageSoundStyle: z.enum(['suave', 'brisa', 'clasico']).optional(),
+      pageSoundStyle: z.enum(['hojas', 'libro', 'suave', 'brisa', 'clasico']).optional(),
       hands: z
         .object({
           enabled: z.boolean(),

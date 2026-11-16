@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, LayoutTemplate, PenLine } from 'lucide-react
 import { APP_CONFIG, PAGE_FORMATS } from '@/config/app.config';
 import { PageRenderer } from '@/components/PageRenderer';
 import { FlipBook } from '@/engine/FlipBook';
-import { playPageTurn } from '@/engine/sound';
+import { playPageTurn, preloadPageTurn } from '@/engine/sound';
 import { DEFAULT_HANDS } from '@/engine/hands';
 import {
   clampView,
@@ -95,6 +95,9 @@ export function Reader({ initialPage, onPageChange, onEdit, onOpenTemplates }: P
     },
     [book.settings.flipDuration, muted, soundEnabled, soundStyle],
   );
+  useEffect(() => {
+    if (soundEnabled && !muted) preloadPageTurn(soundStyle);
+  }, [muted, soundEnabled, soundStyle]);
   const handsLook = useMemo(
     () => (handsEnabled && !handsHidden ? { tone: safeColor(handsSettings.tone, DEFAULT_HANDS.tone), sleeve: safeColor(handsSettings.sleeve, DEFAULT_HANDS.sleeve) } : null),
     [handsEnabled, handsHidden, handsSettings.sleeve, handsSettings.tone],

@@ -28,7 +28,7 @@ import { downloadText, readFileAsText, readImageAsDataUrl, slugify } from '@/lib
 import { safeImageUrl } from '@/lib/sanitize';
 import type { BookAction } from '@/store/bookReducer';
 import { DEFAULT_HANDS, SKIN_TONES } from '@/engine/hands';
-import { playPageTurn, SOUND_STYLES, type SoundStyle } from '@/engine/sound';
+import { DEFAULT_SOUND_STYLE, playPageTurn, SOUND_STYLES, type SoundStyle } from '@/engine/sound';
 import { ColorField, NumberField, RangeField, Section, Segmented } from './fields';
 
 type Tab = 'element' | 'page' | 'book';
@@ -479,7 +479,7 @@ function BookPanel({ book, dispatch, notify }: { book: Book; dispatch: Props['di
               <select
                 className="select"
                 aria-label="Tipo de sonido"
-                value={book.settings.pageSoundStyle ?? 'suave'}
+                value={book.settings.pageSoundStyle ?? DEFAULT_SOUND_STYLE}
                 onChange={(e) => dispatch({ type: 'book/settings', patch: { pageSoundStyle: e.target.value as SoundStyle } })}
               >
                 {SOUND_STYLES.map((st) => (
@@ -491,12 +491,12 @@ function BookPanel({ book, dispatch, notify }: { book: Book; dispatch: Props['di
               <button
                 type="button"
                 className="btn btn-sm"
-                onClick={() => playPageTurn({ style: book.settings.pageSoundStyle ?? 'suave', duration: book.settings.flipDuration })}
+                onClick={() => playPageTurn({ wait: true, style: book.settings.pageSoundStyle ?? DEFAULT_SOUND_STYLE, duration: book.settings.flipDuration })}
               >
                 <Play size={14} /> Probar
               </button>
             </div>
-            <small className="muted">{SOUND_STYLES.find((st) => st.value === (book.settings.pageSoundStyle ?? 'suave'))?.description}</small>
+            <small className="muted">{SOUND_STYLES.find((st) => st.value === (book.settings.pageSoundStyle ?? DEFAULT_SOUND_STYLE))?.description}</small>
           </div>
         )}
         <label className="check">

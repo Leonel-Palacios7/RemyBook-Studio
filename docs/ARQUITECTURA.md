@@ -55,10 +55,14 @@ Dominio y contenido (domain/types, content/*.json + schema Zod, config/)
 
 ### Sonido (`sound.ts`)
 
-- Sintetizado con Web Audio API: ruido rosado filtrado (roce del papel), un golpe grave suave al
+- Grabaciones (`hojas`, por defecto, y `libro`): MP3 en `src/assets/sounds/`, aportados por el autor
+  del proyecto (recortados y normalizados). Se descargan una vez con `fetch` (permitido por la CSP
+  `connect-src 'self'`), se decodifican y se reproducen con paneo; el lector las precarga. Si fallan,
+  suena el estilo sintetizado «suave».
+- Estilos sintetizados con Web Audio API: ruido rosado filtrado (roce del papel), un golpe grave suave al
   asentarse la hoja y, en el estilo «brisa», dos tonos senoidales tipo campanita. Paneo estéreo que
   sigue la hoja según el sentido del giro y compresor final para evitar picos. Estilos en
-  `SOUND_STYLES` (`suave`, `brisa`, `clasico`), elegidos en `settings.pageSoundStyle`. No descarga
+  `SOUND_STYLES` (`hojas`, `libro`, `suave`, `brisa`, `clasico`), elegidos en `settings.pageSoundStyle`. No descarga
   archivos, por lo que respeta la CSP y no requiere licencias de audio.
 - `FlipBook` expone `onTurnStart(direction)`: suena al empezar un giro por botón, teclado, clic o
   arrastre. El lector aplica la preferencia de la publicación (`settings.pageSound`) y el silencio
@@ -66,7 +70,7 @@ Dominio y contenido (domain/types, content/*.json + schema Zod, config/)
 
 ### Manos del lector (`ReaderHands.tsx`, `hands.ts`)
 
-- Dibujo SVG original, decorativo (`aria-hidden`, sin eventos). Se ancla a los bordes del libro dentro
+- Dibujo SVG original en estilo caricatura (contorno grueso, colores planos, tres dedos y pulgar), decorativo (`aria-hidden`, sin eventos). Se ancla a los bordes del libro dentro
   de `.fb-frame`; durante un giro, la mano del lado que empuja sigue el borde libre de la hoja
   (`spine + ancho·cos θ`) hasta el 82 % del recorrido y luego vuelve a su lugar.
 - La publicación decide si existen y su apariencia (`settings.hands`: `enabled`, `tone`, `sleeve`);
