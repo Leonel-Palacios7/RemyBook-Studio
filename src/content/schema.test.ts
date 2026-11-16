@@ -32,3 +32,24 @@ describe('validación del contenido', () => {
     expect(book.pages.map((p) => p.title)).toContain('Portada');
   });
 });
+
+describe('formas y marcos nuevos', () => {
+  it('acepta degradados, siluetas y espaciado de texto', () => {
+    const book = createDefaultBook();
+    book.pages[0]!.elements.push(
+      createShape('arch', { fillTo: '#ffffff', gradientAngle: 90 }),
+      createShape('wave'),
+      createImage('', { mask: 'blob', placeholder: '#cccccc' }),
+      createText({ letterSpacing: 0.2, uppercase: true }),
+    );
+    expect(parseBook(book).ok).toBe(true);
+  });
+
+  it('acepta y valida los ajustes de sonido y manos', () => {
+    const book = createDefaultBook();
+    book.settings.pageSoundStyle = 'brisa';
+    book.settings.hands = { enabled: false };
+    expect(parseBook(book).ok).toBe(true);
+    expect(parseBook({ ...book, settings: { ...book.settings, pageSoundStyle: 'trueno' } }).ok).toBe(false);
+  });
+});

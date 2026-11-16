@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { FlipBook } from './FlipBook';
 
-function Harness({ initial = 0, onChange }: { initial?: number; onChange?: (v: number) => void }) {
+function Harness({ initial = 0, onChange, onTurnStart }: { initial?: number; onChange?: (v: number) => void; onTurnStart?: (d: 1 | -1) => void }) {
   const [view, setView] = useState(initial);
   return (
     <>
@@ -19,6 +19,7 @@ function Harness({ initial = 0, onChange }: { initial?: number; onChange?: (v: n
         pageWidth={200}
         pageHeight={280}
         duration={0}
+        onTurnStart={onTurnStart}
         renderPage={(i) => <div data-testid={`page-${i}`}>Página {i + 1}</div>}
       />
     </>
@@ -78,5 +79,17 @@ describe('<FlipBook />', () => {
     expect(onChange).not.toHaveBeenCalled();
     expect(book).toHaveAttribute('data-view', '0');
     vi.restoreAllMocks();
+  });
+
+  it('avisa el inicio de cada giro (para el sonido)', () => {
+    const onTurnStart = vi.fn();
+    render(<Harness onTurnStart={onTurnStart} />);
+    fireEvent.click(screen.getByText('siguiente'));
+    expect(onTurnStart).toHaveBeenCalledWith(1);
+    const book = screen.getByTestId('flipbook');
+    book.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 280, right: 400, bottom: 280, x: 0, y: 0, toJSON: () => ({}) });
+    fireEvent.pointerDown(book, { clientX: 10, clientY: 100, pointerId: 9, button: 0 });
+    fireEvent.pointerMove(book, { clientX: 120, clientY: 100, pointerId: 9 });
+    expect(onTurnStart).toHaveBeenLastCalledWith(-1);
   });
 });

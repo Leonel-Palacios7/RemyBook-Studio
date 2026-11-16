@@ -181,3 +181,73 @@ describe('integración: editor', () => {
     expect(screen.getByText('Página 1 de 8')).toBeInTheDocument();
   });
 });
+
+describe('integración: plantillas', () => {
+  it('aplica una plantilla desde el editor y se puede deshacer', async () => {
+    await renderApp();
+    fireEvent.click(screen.getByRole('button', { name: /Editor/ }));
+    await screen.findByTestId('canvas-page');
+    fireEvent.click(screen.getByRole('button', { name: /Plantillas/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Plantillas de turismo' });
+    expect(within(dialog).getAllByRole('button', { name: /Ver plantilla/ })).toHaveLength(10);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Ver plantilla Selva viva' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /Usar esta plantilla/ }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByText('Página 1 de 6')).toBeInTheDocument();
+    expect(screen.getByText(/Plantilla «Selva viva» aplicada/)).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('Deshacer'));
+    expect(screen.getByText('Página 1 de 8')).toBeInTheDocument();
+  });
+
+  it('se abre desde el lector cuando la publicación está en blanco y se cierra con Escape', async () => {
+    await renderApp();
+    fireEvent.click(screen.getByRole('button', { name: /Elegir una plantilla/ }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+});
+
+describe('integración: sonido', () => {
+  it('silencia y reactiva el sonido de páginas con botón y tecla M', async () => {
+    await renderApp();
+    fireEvent.click(screen.getByLabelText('Silenciar sonido de páginas'));
+    expect(screen.getByLabelText('Activar sonido de páginas')).toBeInTheDocument();
+    expect(localStorage.getItem('sena-flipbook-studio:muted')).toBe('1');
+    fireEvent.keyDown(window, { key: 'm' });
+    expect(screen.getByLabelText('Silenciar sonido de páginas')).toBeInTheDocument();
+  });
+
+  it('oculta el control si la publicación tiene el sonido desactivado', async () => {
+    const book = createDefaultBook();
+    book.settings.pageSound = false;
+    await renderApp(book);
+    expect(screen.queryByLabelText(/sonido de páginas/)).not.toBeInTheDocument();
+  });
+
+  it('muestra y oculta la manito del cursor con botón y tecla H', async () => {
+    const { container } = await renderApp();
+    await screen.findByText('1 / 8');
+    expect(container.querySelector('.fb-hands')).not.toBeNull();
+    fireEvent.click(screen.getByLabelText('Ocultar manito del cursor'));
+    expect(container.querySelector('.fb-hands')).toBeNull();
+    expect(localStorage.getItem('sena-flipbook-studio:hands-hidden')).toBe('1');
+    fireEvent.keyDown(window, { key: 'h' });
+    expect(container.querySelector('.fb-hands')).not.toBeNull();
+    expect(screen.getByLabelText('Ocultar manito del cursor')).toBeInTheDocument();
+  });
+
+  it('configura sonido y manito desde el editor', async () => {
+    const { container } = await renderApp();
+    fireEvent.click(screen.getByRole('button', { name: /Editor/ }));
+    await screen.findByTestId('canvas-page');
+    fireEvent.click(screen.getByRole('tab', { name: 'Publicación' }));
+    fireEvent.change(screen.getByLabelText('Tipo de sonido'), { target: { value: 'brisa' } });
+    expect((screen.getByLabelText('Tipo de sonido') as HTMLSelectElement).value).toBe('brisa');
+    fireEvent.click(screen.getByLabelText('Mostrar manito del cursor al pasar página'));
+    fireEvent.click(screen.getByRole('button', { name: /Lector/ }));
+    await screen.findByText('1 / 8');
+    expect(container.querySelector('.fb-hands')).toBeNull();
+    expect(screen.queryByLabelText(/manito del cursor/)).not.toBeInTheDocument();
+  });
+});

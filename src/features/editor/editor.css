@@ -115,6 +115,7 @@
 kbd { font-family: inherit; font-size: 11px; padding: 1px 5px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface-2); }
 .check { display: flex; align-items: center; gap: 10px; font-size: 14px; }
 .check input { width: 18px; height: 18px; accent-color: var(--sena-green); }
+.check-sm { font-size: 13px; align-self: end; min-height: 38px; }
 .confirm { display: grid; gap: 8px; padding: 12px; border-radius: var(--radius-sm); background: #fdecec; color: #7a1c1c; font-size: 13px; }
 :root[data-theme='dark'] .confirm { background: #3a1616; color: #ffd6d6; }
 

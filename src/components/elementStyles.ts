@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { PageElement, TextElement } from '@/domain/types';
+import type { ImageMask, PageElement, ShapeElement, TextElement } from '@/domain/types';
 import { safeColor } from '@/lib/sanitize';
 
 /** Estilo de posicionamiento común (porcentajes de la página). */
@@ -28,6 +28,41 @@ export function textStyle(el: TextElement): CSSProperties {
     lineHeight: el.lineHeight,
     padding: `${el.padding}cqw`,
     borderRadius: `${el.radius}cqw`,
+    letterSpacing: el.letterSpacing ? `${el.letterSpacing}em` : undefined,
+    textTransform: el.uppercase ? 'uppercase' : undefined,
   };
 }
 
+
+/**
+ * Recortes de imagen. Se usan radios enormes (se reducen proporcionalmente
+ * según el tamaño real) y clip-path con porcentajes, así la silueta se
+ * conserva a cualquier escala.
+ */
+export function maskStyle(mask: ImageMask | undefined, radius: number): CSSProperties {
+  switch (mask) {
+    case 'arch':
+      return { borderRadius: '9999px 9999px 0 0' };
+    case 'circle':
+      return { borderRadius: '50%' };
+    case 'pill':
+      return { borderRadius: '9999px' };
+    case 'blob':
+      return { borderRadius: '62% 38% 55% 45% / 48% 58% 42% 52%' };
+    case 'leaf':
+      return { borderRadius: '0 9999px 0 9999px' };
+    case 'hexagon':
+      return { clipPath: 'polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%)' };
+    case 'diamond':
+      return { clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' };
+    default:
+      return { borderRadius: `${radius}cqw` };
+  }
+}
+
+/** Relleno sólido o degradado de una forma. */
+export function shapeFill(el: ShapeElement): string {
+  const from = safeColor(el.fill);
+  if (!el.fillTo) return from;
+  return `linear-gradient(${el.gradientAngle ?? 180}deg, ${from}, ${safeColor(el.fillTo)})`;
+}

@@ -10,6 +10,7 @@ import {
   pagesInView,
   type FlipMode,
 } from './layout';
+import { ReaderHands } from './ReaderHands';
 import './flipbook.css';
 
 export interface Turning {
@@ -33,6 +34,11 @@ export interface FlipBookProps {
   paperColor?: string;
   /** Desactiva el arrastre (p. ej. con zoom activo). */
   dragDisabled?: boolean;
+  /** Manos del lector (null = ocultas). */
+  /** Muestra la manito del cursor que señala y arrastra la hoja. */
+  hands?: boolean;
+  /** Se llama cuando una hoja empieza a moverse (para el sonido). */
+  onTurnStart?: (direction: 1 | -1) => void;
 }
 
 interface DragState {
@@ -64,6 +70,8 @@ export function FlipBook({
   renderPage,
   paperColor = '#ffffff',
   dragDisabled = false,
+  onTurnStart,
+  hands = false,
 }: FlipBookProps) {
   const [displayView, setDisplayView] = useState(view);
   const [turning, setTurning] = useState<Turning | null>(null);
@@ -71,6 +79,9 @@ export function FlipBook({
   const drag = useRef<DragState | null>(null);
   const bookRef = useRef<HTMLDivElement>(null);
   const last = maxView(mode, pageCount);
+  // Referencia estable para no reiniciar efectos cuando cambia la función del padre.
+  const turnStartRef = useRef(onTurnStart);
+  turnStartRef.current = onTurnStart;
 
   const stop = useCallback(() => {
     cancelRef.current?.();
@@ -103,6 +114,7 @@ export function FlipBook({
     const direction: 1 | -1 = target > displayView ? 1 : -1;
     const leaf = direction === 1 ? target - 1 : target;
     setDisplayView(target);
+    turnStartRef.current?.(direction);
     runTurn({ leaf, direction }, 0, 1);
     // displayView se omite a propósito: solo reaccionamos a cambios externos.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -146,6 +158,7 @@ export function FlipBook({
       d.started = true;
       bookRef.current?.setPointerCapture?.(e.pointerId);
       setDisplayView(target);
+      turnStartRef.current?.(d.direction);
     }
     const now = performance.now();
     d.velocity = (e.clientX - d.lastX) / Math.max(1, now - d.lastT);
@@ -191,14 +204,16 @@ export function FlipBook({
     else if (rightPage === null && !turning) shift = pageWidth / 2;
   }
 
-  const bookStyle: CSSProperties = {
+  const frameStyle: CSSProperties = {
     width: pageWidth * columns,
     height: pageHeight,
     transform: `translateX(${shift}px)`,
   };
+  const bookStyle: CSSProperties = { width: pageWidth * columns, height: pageHeight };
 
   return (
     <div className="fb-stage" data-mode={mode}>
+      <div className="fb-frame" style={frameStyle}>
       <div
         ref={bookRef}
         className="fb-book"
@@ -265,6 +280,17 @@ export function FlipBook({
         {mode === 'double' && displayView < last && !turning && (
           <div className="fb-corner fb-corner-right" aria-hidden="true" />
         )}
+      </div>
+      {hands && (
+        <ReaderHands
+          mode={mode}
+          pageWidth={pageWidth}
+          pageHeight={pageHeight}
+          canNext={displayView < last}
+          canPrev={displayView > 0}
+          turn={turning ? { angle: leafAngle(turning.leaf, displayView, turning), direction: turning.direction } : null}
+        />
+      )}
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, PenLine } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LayoutTemplate, PenLine } from 'lucide-react';
 import { APP_CONFIG, PAGE_FORMATS } from '@/config/app.config';
 import { PageRenderer } from '@/components/PageRenderer';
 import { FlipBook } from '@/engine/FlipBook';
+import { playPageTurn, preloadPageTurn } from '@/engine/sound';
+import { DEFAULT_HANDS } from '@/engine/hands';
 import {
   clampView,
   convertView,
@@ -22,13 +24,33 @@ import { SidePanel, type PanelKind } from './SidePanel';
 import { PrintView } from './PrintView';
 import './reader.css';
 
+const MUTE_KEY = 'sena-flipbook-studio:muted';
+const HANDS_KEY = 'sena-flipbook-studio:hands-hidden';
+
+function readFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeFlag(key: string, value: boolean): void {
+  try {
+    localStorage.setItem(key, value ? '1' : '0');
+  } catch {
+    /* sin persistencia */
+  }
+}
+
 interface Props {
   initialPage: number;
   onPageChange: (page: number) => void;
   onEdit: (page: number) => void;
+  onOpenTemplates: () => void;
 }
 
-export function Reader({ initialPage, onPageChange, onEdit }: Props) {
+export function Reader({ initialPage, onPageChange, onEdit, onOpenTemplates }: Props) {
   const { book } = useBook();
   const pageCount = book.pages.length;
   const narrow = useMediaQuery(`(max-width: ${APP_CONFIG.singlePageBreakpoint}px)`);
@@ -47,6 +69,35 @@ export function Reader({ initialPage, onPageChange, onEdit }: Props) {
   const [panel, setPanel] = useState<PanelKind | null>(null);
   const [query, setQuery] = useState('');
   const [fullscreen, setFullscreen] = useState(false);
+  // Sonido y manos: la publicación decide si existen; quien lee puede apagarlos.
+  const [muted, setMuted] = useState(() => readFlag(MUTE_KEY));
+  const [handsHidden, setHandsHidden] = useState(() => readFlag(HANDS_KEY));
+  const soundEnabled = book.settings.pageSound !== false;
+  const handsSettings = book.settings.hands ?? DEFAULT_HANDS;
+  const handsEnabled = handsSettings.enabled;
+  const toggleMute = useCallback(() => {
+    setMuted((m) => {
+      writeFlag(MUTE_KEY, !m);
+      return !m;
+    });
+  }, []);
+  const toggleHands = useCallback(() => {
+    setHandsHidden((h) => {
+      writeFlag(HANDS_KEY, !h);
+      return !h;
+    });
+  }, []);
+  const soundStyle = book.settings.pageSoundStyle;
+  const onTurnStart = useCallback(
+    (direction: 1 | -1) => {
+      if (soundEnabled && !muted) playPageTurn({ duration: book.settings.flipDuration, style: soundStyle, direction });
+    },
+    [book.settings.flipDuration, muted, soundEnabled, soundStyle],
+  );
+  useEffect(() => {
+    if (soundEnabled && !muted) preloadPageTurn(soundStyle);
+  }, [muted, soundEnabled, soundStyle]);
+  const showHands = handsEnabled && !handsHidden;
   const [toast, setToast] = useToast();
   const rootRef = useRef<HTMLDivElement>(null);
   const [stageRef, stage] = useElementSize<HTMLDivElement>();
@@ -119,6 +170,14 @@ export function Reader({ initialPage, onPageChange, onEdit }: Props) {
         case 'F':
           void toggleFullscreen(rootRef.current ?? undefined);
           break;
+        case 'm':
+        case 'M':
+          toggleMute();
+          break;
+        case 'h':
+        case 'H':
+          toggleHands();
+          break;
         case 'Escape':
           setPanel(null);
           break;
@@ -127,7 +186,7 @@ export function Reader({ initialPage, onPageChange, onEdit }: Props) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [last, next, prev, setView, zoomBy]);
+  }, [last, next, prev, setView, toggleHands, toggleMute, zoomBy]);
 
   const ratio = PAGE_FORMATS[book.settings.format]?.ratio ?? PAGE_FORMATS['a4-portrait'].ratio;
   const padX = narrow ? 16 : 120;
@@ -188,6 +247,8 @@ export function Reader({ initialPage, onPageChange, onEdit }: Props) {
               duration={reducedMotion ? 0 : book.settings.flipDuration}
               renderPage={renderPage}
               dragDisabled={zoom > 1}
+              onTurnStart={onTurnStart}
+              hands={showHands}
             />
           )}
         </div>
@@ -196,9 +257,14 @@ export function Reader({ initialPage, onPageChange, onEdit }: Props) {
           <div className="reader-empty card" role="note">
             <strong>Tu publicación está en blanco</strong>
             <span className="muted">Agrega textos, imágenes y formas desde el editor. Todo se guarda en este equipo.</span>
-            <button type="button" className="btn btn-primary btn-sm" onClick={() => onEdit(current)}>
-              <PenLine size={16} /> Abrir el editor
-            </button>
+            <div className="row wrap" style={{ justifyContent: 'center' }}>
+              <button type="button" className="btn btn-primary btn-sm" onClick={onOpenTemplates}>
+                <LayoutTemplate size={16} /> Elegir una plantilla
+              </button>
+              <button type="button" className="btn btn-sm" onClick={() => onEdit(current)}>
+                <PenLine size={16} /> Empezar en blanco
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -218,6 +284,10 @@ export function Reader({ initialPage, onPageChange, onEdit }: Props) {
         zoom={zoom}
         panel={panel}
         fullscreen={fullscreen}
+        sound={soundEnabled ? !muted : null}
+        onToggleSound={toggleMute}
+        hands={handsEnabled ? !handsHidden : null}
+        onToggleHands={toggleHands}
         onFirst={() => setView(0)}
         onPrev={prev}
         onNext={next}

@@ -1,6 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Topbar } from '@/app/Topbar';
 import { Reader } from '@/features/reader/Reader';
+import { TemplatesDialog } from '@/features/templates/TemplatesDialog';
+import { useToast } from '@/lib/hooks';
 import { useHashRoute, type RouteName } from '@/lib/router';
 import { useBook } from '@/store/BookProvider';
 
@@ -20,7 +22,9 @@ function initialTheme(): 'light' | 'dark' {
 }
 
 export default function App() {
-  const { book, saveStatus } = useBook();
+  const { book, saveStatus, dispatch } = useBook();
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [toast, setToast] = useToast(3500);
   const [route, navigate] = useHashRoute();
   const [theme, setTheme] = useState<'light' | 'dark'>(initialTheme);
 
@@ -55,13 +59,39 @@ export default function App() {
       />
       <main id="main" className="app-main">
         {route.name === 'read' ? (
-          <Reader initialPage={route.page} onPageChange={setPage} onEdit={(page) => goTo('edit', page)} />
+          <Reader
+            initialPage={route.page}
+            onPageChange={setPage}
+            onEdit={(page) => goTo('edit', page)}
+            onOpenTemplates={() => setTemplatesOpen(true)}
+          />
         ) : (
           <Suspense fallback={<div className="app-loading">Cargando editor…</div>}>
-            <Editor initialPage={route.page} onPageChange={setPage} onPreview={(page) => goTo('read', page)} />
+            <Editor
+              initialPage={route.page}
+              onPageChange={setPage}
+              onPreview={(page) => goTo('read', page)}
+              onOpenTemplates={() => setTemplatesOpen(true)}
+            />
           </Suspense>
         )}
       </main>
+      {templatesOpen && (
+        <TemplatesDialog
+          onClose={() => setTemplatesOpen(false)}
+          onApply={(next) => {
+            dispatch({ type: 'book/replace', book: next });
+            setTemplatesOpen(false);
+            navigate({ name: route.name, page: 0 });
+            setToast(`Plantilla «${next.title}» aplicada. Ctrl+Z en el editor para deshacer.`);
+          }}
+        />
+      )}
+      {toast && (
+        <div className="toast" role="status">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

@@ -16,15 +16,18 @@ interface Props {
   initialPage: number;
   onPageChange: (page: number) => void;
   onPreview: (page: number) => void;
+  onOpenTemplates: () => void;
 }
 
-export default function Editor({ initialPage, onPageChange, onPreview }: Props) {
+export default function Editor({ initialPage, onPageChange, onPreview, onOpenTemplates }: Props) {
   const { book, dispatch, canUndo, canRedo } = useBook();
   const [pageId, setPageId] = useState(() => book.pages[Math.min(initialPage, book.pages.length - 1)]?.id ?? '');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [toast, setToast] = useToast();
   const clipboard = useRef<PageElement | null>(null);
+  const frameInput = useRef<HTMLInputElement>(null);
+  const frameTarget = useRef<string | null>(null);
 
   // Si la página seleccionada desaparece (eliminada / deshacer), elegir otra válida.
   const pageIndex = Math.max(0, book.pages.findIndex((p) => p.id === pageId));
@@ -67,6 +70,19 @@ export default function Editor({ initialPage, onPageChange, onPreview }: Props) 
       }
     },
     [addElement, setToast],
+  );
+
+  const replaceImage = useCallback(
+    async (elementId: string, file: File) => {
+      try {
+        const src = await readImageAsDataUrl(file);
+        dispatch({ type: 'element/update', pageId: page.id, elementId, patch: { src } });
+        setSelectedId(elementId);
+      } catch (err) {
+        setToast((err as Error).message || 'No se pudo cargar la imagen');
+      }
+    },
+    [dispatch, page.id, setToast],
   );
 
   // Atajos de teclado del editor.
@@ -160,6 +176,7 @@ export default function Editor({ initialPage, onPageChange, onPreview }: Props) 
           onAdd={addElement}
           onAddImages={addImageFiles}
           onPreview={() => onPreview(pageIndex)}
+          onOpenTemplates={onOpenTemplates}
           pageNumber={pageIndex + 1}
           pageCount={book.pages.length}
         />
@@ -175,7 +192,23 @@ export default function Editor({ initialPage, onPageChange, onPreview }: Props) 
           onStartEditing={setEditingId}
           onStopEditing={() => setEditingId(null)}
           onDropImages={addImageFiles}
+          onReplaceImage={replaceImage}
+          onPickImage={(id) => {
+            frameTarget.current = id;
+            frameInput.current?.click();
+          }}
           dispatch={dispatch}
+        />
+        <input
+          ref={frameInput}
+          type="file"
+          hidden
+          accept="image/png,image/jpeg,image/gif,image/webp,image/avif,image/svg+xml"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            if (file && frameTarget.current) void replaceImage(frameTarget.current, file);
+          }}
         />
       </section>
 

@@ -2,8 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   Circle,
+  Cloud,
+  Diamond,
+  DoorClosed,
   Eye,
+  Hexagon,
+  Leaf,
+  Waves,
   Image as ImageIcon,
+  LayoutTemplate,
   Minus,
   Printer,
   Redo2,
@@ -26,6 +33,7 @@ interface Props {
   onAdd: (el: PageElement) => void;
   onAddImages: (files: FileList) => void;
   onPreview: () => void;
+  onOpenTemplates: () => void;
   pageNumber: number;
   pageCount: number;
 }
@@ -33,6 +41,12 @@ interface Props {
 const SHAPES: { type: ShapeType; label: string; Icon: typeof Square }[] = [
   { type: 'rect', label: 'Rectángulo', Icon: Square },
   { type: 'ellipse', label: 'Elipse', Icon: Circle },
+  { type: 'arch', label: 'Arco', Icon: DoorClosed },
+  { type: 'wave', label: 'Onda', Icon: Waves },
+  { type: 'blob', label: 'Orgánica', Icon: Cloud },
+  { type: 'leaf', label: 'Hoja', Icon: Leaf },
+  { type: 'hexagon', label: 'Hexágono', Icon: Hexagon },
+  { type: 'diamond', label: 'Rombo', Icon: Diamond },
   { type: 'triangle', label: 'Triángulo', Icon: Triangle },
   { type: 'star', label: 'Estrella', Icon: Star },
   { type: 'arrow', label: 'Flecha', Icon: ArrowRight },
@@ -45,7 +59,7 @@ const TEXT_PRESETS = [
   { label: 'Párrafo', patch: { text: 'Escriba aquí el contenido del párrafo.', fontSize: 3.2, fontWeight: 400, h: 22, lineHeight: 1.5 } },
 ];
 
-export function EditorToolbar({ canUndo, canRedo, dispatch, onAdd, onAddImages, onPreview, pageNumber, pageCount }: Props) {
+export function EditorToolbar({ canUndo, canRedo, dispatch, onAdd, onAddImages, onPreview, onOpenTemplates, pageNumber, pageCount }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [menu, setMenu] = useState<'text' | 'shape' | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -68,6 +82,9 @@ export function EditorToolbar({ canUndo, canRedo, dispatch, onAdd, onAddImages, 
   return (
     <div ref={rootRef} className="editor-toolbar card" role="toolbar" aria-label="Herramientas">
       <div className="et-group">
+        <button type="button" className="btn btn-sm btn-primary" onClick={onOpenTemplates}>
+          <LayoutTemplate size={16} /> Plantillas
+        </button>
         <div className="et-menu">
           <button type="button" className={`btn btn-sm${menu === 'text' ? ' is-open' : ''}`} onClick={() => setMenu(menu === 'text' ? null : 'text')} aria-expanded={menu === 'text'} aria-haspopup="menu">
             <Type size={16} /> Texto

@@ -18,6 +18,10 @@ interface Props {
   onStartEditing: (id: string) => void;
   onStopEditing: () => void;
   onDropImages: (files: File[], at: { x: number; y: number }) => void;
+  /** Reemplaza la imagen de un marco existente (soltar archivo encima). */
+  onReplaceImage: (elementId: string, file: File) => void;
+  /** Abre el selector de archivos para un marco de imagen. */
+  onPickImage: (elementId: string) => void;
   dispatch: (action: BookAction) => void;
 }
 
@@ -25,7 +29,7 @@ const HANDLES: Handle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
 
 const KIND_LABEL: Record<PageElement['kind'], string> = { text: 'Texto', image: 'Imagen', shape: 'Forma' };
 
-export function Canvas({ book, page, selectedId, editingId, onSelect, onStartEditing, onStopEditing, onDropImages, dispatch }: Props) {
+export function Canvas({ book, page, selectedId, editingId, onSelect, onStartEditing, onStopEditing, onDropImages, onReplaceImage, onPickImage, dispatch }: Props) {
   const [wrapRef, size] = useElementSize<HTMLDivElement>();
   const pageRef = useRef<HTMLDivElement>(null);
   const action = useRef<Interaction | null>(null);
@@ -35,10 +39,30 @@ export function Canvas({ book, page, selectedId, editingId, onSelect, onStartEdi
   const ratio = PAGE_FORMATS[book.settings.format]?.ratio ?? 0.707;
   const { width, height } = fitPageSize(Math.max(0, size.width - 48), Math.max(0, size.height - 48), ratio, 'single');
 
+  const lastDown = useRef<{ id: string; time: number } | null>(null);
+
+  /** Doble clic: editar texto o elegir la foto de un marco. */
+  const activate = (el: PageElement) => {
+    if (el.locked) return;
+    if (el.kind === 'text') onStartEditing(el.id);
+    else if (el.kind === 'image') onPickImage(el.id);
+  };
+
   const begin = (e: ReactPointerEvent, el: PageElement, kind: Interaction['kind'], handle?: Handle) => {
     e.stopPropagation();
     e.preventDefault();
     onSelect(el.id);
+    // La captura del puntero impide que llegue `dblclick` al elemento: se detecta aquí.
+    if (kind === 'move') {
+      const now = performance.now();
+      const prev = lastDown.current;
+      lastDown.current = { id: el.id, time: now };
+      if (prev && prev.id === el.id && now - prev.time < 400) {
+        lastDown.current = null;
+        activate(el);
+        return;
+      }
+    }
     if (el.locked || editingId === el.id) return;
     const rect = (e.currentTarget.closest('.ed-el') as HTMLElement | null)?.getBoundingClientRect();
     dispatch({ type: 'history/checkpoint' });
@@ -87,6 +111,13 @@ export function Canvas({ book, page, selectedId, editingId, onSelect, onStartEdi
         const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith('image/'));
         if (!files.length || !pageRef.current) return;
         e.preventDefault();
+        // Soltar sobre un marco de imagen lo rellena en lugar de crear otra imagen.
+        const target = (e.target as HTMLElement).closest<HTMLElement>('[data-el-id]');
+        const frame = page.elements.find((el) => el.id === target?.dataset.elId && el.kind === 'image' && !el.locked);
+        if (frame && files[0]) {
+          onReplaceImage(frame.id, files[0]);
+          return;
+        }
         const r = pageRef.current.getBoundingClientRect();
         onDropImages(files, { x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
       }}
@@ -121,7 +152,7 @@ export function Canvas({ book, page, selectedId, editingId, onSelect, onStartEdi
                 className={`ed-el pr-el${isSelected ? ' is-selected' : ''}${el.locked ? ' is-locked' : ''}`}
                 style={elementBoxStyle(el)}
                 onPointerDown={(e) => begin(e, el, 'move')}
-                onDoubleClick={() => el.kind === 'text' && onStartEditing(el.id)}
+                data-el-id={el.id}
                 data-testid={`element-${el.kind}`}
                 aria-label={`${KIND_LABEL[el.kind]}${el.kind === 'text' ? `: ${el.text.slice(0, 40)}` : ''}`}
                 aria-selected={isSelected}

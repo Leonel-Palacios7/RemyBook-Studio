@@ -53,6 +53,32 @@ Dominio y contenido (domain/types, content/*.json + schema Zod, config/)
 - Arrastre: se activa tras 6 px; progreso = desplazamiento / ancho; al soltar completa si supera
   30 % o si el gesto es rápido (> 0,5 px/ms), si no vuelve. Un clic sin arrastre pasa de página.
 
+### Sonido (`sound.ts`)
+
+- Grabaciones (`hojas`, por defecto, y `libro`): MP3 en `src/assets/sounds/`, aportados por el autor
+  del proyecto (recortados y normalizados). Se descargan una vez con `fetch` (permitido por la CSP
+  `connect-src 'self'`), se decodifican y se reproducen con paneo; el lector las precarga. Si fallan,
+  suena el estilo sintetizado «suave».
+- Estilos sintetizados con Web Audio API: ruido rosado filtrado (roce del papel), un golpe grave suave al
+  asentarse la hoja y, en el estilo «brisa», dos tonos senoidales tipo campanita. Paneo estéreo que
+  sigue la hoja según el sentido del giro y compresor final para evitar picos. Estilos en
+  `SOUND_STYLES` (`hojas`, `libro`, `suave`, `brisa`, `clasico`), elegidos en `settings.pageSoundStyle`. No descarga
+  archivos, por lo que respeta la CSP y no requiere licencias de audio.
+- `FlipBook` expone `onTurnStart(direction)`: suena al empezar un giro por botón, teclado, clic o
+  arrastre. El lector aplica la preferencia de la publicación (`settings.pageSound`) y el silencio
+  del lector (guardado en el navegador).
+
+### Manito del cursor (`ReaderHands.tsx`)
+
+- Dibujo SVG original al estilo del puntero clásico, decorativo (`aria-hidden`, sin eventos). En
+  reposo señala, con un toquecito periódico, la esquina de la hoja que se puede pasar (derecha, o
+  izquierda en la última página). Al girar cambia a puño y sigue el borde libre de la hoja
+  (`spine + ancho·cos θ`); al terminar vuelve a la esquina con una transición.
+- Se mueve solo con `transform` (`translate3d`). Con mouse sobre el libro se oculta, porque el
+  cursor real ya cumple esa función.
+- La publicación decide si se muestra (`settings.hands.enabled`); quien lee puede ocultarla con el
+  botón de la barra o la tecla `H` (guardado en el navegador).
+
 ## Estado (`src/store`)
 
 - `bookReducer` es una función pura con acciones tipadas (`page/*`, `element/*`, `book/*`,

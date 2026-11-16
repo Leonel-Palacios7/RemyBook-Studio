@@ -5,6 +5,11 @@ import { cleanup } from '@testing-library/react';
 afterEach(() => {
   cleanup();
   window.location.hash = '';
+  try {
+    localStorage.clear();
+  } catch {
+    /* sin almacenamiento */
+  }
 });
 
 // jsdom no implementa matchMedia ni ResizeObserver: se simulan para las pruebas.

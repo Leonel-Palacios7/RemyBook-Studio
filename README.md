@@ -6,6 +6,8 @@ y se edita libremente, sin límites de páginas ni de elementos.
 
 ![Lector con doble página](docs/capturas/06-lector-doble-pagina.png)
 
+![Galería de plantillas](docs/capturas/09-galeria-plantillas.png)
+
 ## Funcionalidades
 
 **Lector**
@@ -16,12 +18,29 @@ y se edita libremente, sin límites de páginas ni de elementos.
 - Índice (a partir de los títulos de página), miniaturas y búsqueda sin tildes ni mayúsculas.
 - Zoom (50 %–300 %), pantalla completa, compartir (Web Share o copiar enlace) e imprimir / guardar como PDF.
 - Enlaces profundos por página (`#/leer?p=5`).
-- Teclado: `←` `→` `Re Pág` `Av Pág` `Inicio` `Fin` `+` `-` `0` `F` `Esc`.
+- Sonido al pasar cada hoja, a elegir entre dos grabaciones aportadas por el autor («Hojas de libro»,
+  por defecto, y «Libro abriéndose», en `src/assets/sounds/`) y tres sintetizados en el navegador
+  («Papel suave», «Brisa y campanita» y «Papel clásico»). Se silencia con el botón
+  de la barra o la tecla `M`; en el editor se elige el estilo, se prueba y se puede desactivar.
+- Manito de cursor (estilo puntero clásico) que señala la esquina de la hoja y la arrastra al pasar
+  página; se oculta mientras el mouse está sobre el libro. Botón de la barra o tecla `H` para
+  ocultarla, y opción en el editor para desactivarla.
+- Teclado: `←` `→` `Re Pág` `Av Pág` `Inicio` `Fin` `+` `-` `0` `F` `M` `H` `Esc`.
+
+**Plantillas de turismo (10)**
+- Brochures de 6 páginas listos para editar: *Caribe en arcos*, *Andes vertical*, *Aroma de café*,
+  *Calles coloniales*, *Selva viva*, *Desierto dorado*, *Islas y arrecifes*, *Ruta de sabores*,
+  *Ecoturismo verde* y *Noches de festival*.
+- Cada una con portada única, paleta propia, silueta de fotos (arco, círculo, hoja, hexágono…) y
+  páginas de bienvenida, destinos, galería, itinerario y contacto.
+- Las fotos son marcos vacíos: doble clic o arrastrar una imagen encima para rellenarlos.
+- Ver [docs/PLANTILLAS.md](docs/PLANTILLAS.md).
 
 **Editor**
 - Páginas: agregar, duplicar, eliminar, reordenar (arrastrar o botones) y titular.
 - Elementos: texto (título, subtítulo, párrafo), imágenes (subir, arrastrar al lienzo o URL https) y
-  formas (rectángulo, elipse, triángulo, estrella, flecha, línea).
+  formas (rectángulo, elipse, arco, onda, orgánica, hoja, hexágono, rombo, triángulo, estrella, flecha, línea)
+  con relleno sólido o degradado. Las imágenes admiten marcos con silueta.
 - Mover, redimensionar (Mayús = proporcional), rotar (Mayús = 15°), guías de centrado, capas, bloqueo,
   opacidad, colores libres y paleta SENA, tipografía, alineación, interlineado, bordes y radios.
 - Fondo de página por color o imagen; formato de página (A4, carta, cuadrado, 16:9); velocidad del giro.
